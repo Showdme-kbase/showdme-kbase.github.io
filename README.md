@@ -1,8 +1,6 @@
 # Showdme GTM Plan & Insights
 
-This repository hosts two interactive web pages:
-* An Interactive Go-to-Market (GTM) Plan for Showdme LMS.
-* A detailed guide on Competency & Pricing Insights.
+This repository hosts several interactive web pages providing key insights and strategic plans.
 
 ## Access the Live Pages
 
@@ -13,6 +11,12 @@ Click the links below to view the live content:
 
 * **Competency & Pricing Insights**
     [View Competency & Pricing Insights Page](https://showdme-gtm-plan.github.io/Comptency%20and%20Pricing%20Insights.html)
+
+* **Policy Management Research**
+    [View Policy Management Research Page](https://showdme-gtm-plan.github.io/Policy%20Management%20Research.html)
+
+* **Compliance & Training Business Research**
+    [View Compliance & Training Business Research Page](https://showdme-gtm-plan.github.io/Compliance%20-%20Research%20v2%20-%20Copy.html)
 
 ---
 
