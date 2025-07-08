@@ -5,12 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Showdme: Insights & Plans</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'button-link-color': '#57B3DE',
+                        'text-link-color': '#348BB4',
+                        'highlight-color': '#8CC345',
+                        'highlight-color-darken': '#5D822E',
+                        'background-color-1': '#F6F7FB',
+                        'background-color-2': '#E6E6E6',
+                        'background-color-3': '#fff',
+                        'background-color-4': '#EDF0F7',
+                        'card-background': '#FAFAFD',
+                        'text-color-1': '#2B2B2B',
+                        'text-color-2': '#525252',
+                        'negative-color': '#ED8F90',
+                        'border-color': '#E7EBEF',
+                        'required-color': '#CD4343', /* Renamed to avoid conflict with Tailwind's 'required' pseudo-class */
+                        'sm-icon-button-color': '#22C1E8',
+                        'invalid-background-color': '#EBCCD1',
+                        // Mappings for existing Tailwind classes to new custom colors
+                        'gray': {
+                            '800': '#2B2B2B', /* text-color-1 */
+                            '600': '#525252', /* text-color-2 */
+                        },
+                        'blue': {
+                            '50': '#EDF0F7', /* background-color-4 for light sections */
+                            // Removed blue-500/600 mapping as .btn-link will use custom CSS variables
+                            '700': '#348BB4', /* text-link-color for section headings */
+                        },
+                        'green': {
+                            '50': '#EDF0F7', /* background-color-4 for light sections, assuming a neutral light background */
+                            '700': '#348BB4', /* NOW text-link-color for heading, matching others */
+                        },
+                        'purple': {
+                            '50': '#EDF0F7', /* background-color-4 for light sections */
+                            '700': '#348BB4', /* text-link-color for heading */
+                        },
+                        'yellow': {
+                            '50': '#EDF0F7', /* background-color-4 for light sections */
+                            '700': '#348BB4', /* text-link-color for heading */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Company Color Palette */
+        :root {
+            --button-link-color: #57B3DE;
+            --text-link-color: #348BB4;
+            --highlight-color: #8CC345;
+            --highlight-color-darken: #5D822E;
+            --background-color-1: #F6F7FB;
+            --background-color-2: #E6E6E6;
+            --background-color-3: #fff;
+            --background-color-4: #EDF0F7;
+            --card-background: #FAFAFD;
+            --text-color-1: #2B2B2B;
+            --text-color-2: #525252;
+            --negative-color: #ED8F90;
+            --border-color: #E7EBEF;
+            --required: #CD4343;
+            --sm-icon-button-color: #22C1E8;
+            --invalid-background-color: #EBCCD1;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-            color: #334155; /* Darker text */
+            /* background-color and color are now applied via inline style below */
             line-height: 1.6;
         }
         .container {
@@ -19,12 +86,11 @@
             padding: 2rem;
         }
         .card {
-            background-color: #ffffff;
             border-radius: 0.75rem; /* Rounded corners */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
             padding: 2rem;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border: 1px solid #e2e8f0; /* Subtle border */
+            /* background-color and border are now applied via inline style below */
         }
         .card:hover {
             transform: translateY(-5px);
@@ -33,7 +99,7 @@
         .btn-link {
             display: inline-block;
             padding: 0.75rem 1.5rem;
-            background-color: #3b82f6; /* Blue */
+            background-color: var(--button-link-color); /* Explicitly use company button color */
             color: white;
             border-radius: 0.5rem;
             text-decoration: none;
@@ -41,14 +107,14 @@
             transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
         }
         .btn-link:hover {
-            background-color: #2563eb; /* Darker blue on hover */
+            background-color: var(--text-link-color); /* Explicitly use company text link color for hover */
             transform: translateY(-1px);
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen" style="background-color: var(--background-color-1); color: var(--text-color-1);">
     <div class="container text-center">
-        <div class="card">
+        <div class="card" style="background-color: var(--card-background); border: 1px solid var(--border-color);">
             <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
                 Showdme Strategic Planning and Research
             </h1>
@@ -91,27 +157,28 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                <div class="p-6 bg-purple-50 rounded-lg shadow-sm"> 
+                <div class="p-6 bg-purple-50 rounded-lg shadow-sm">
                     <h2 class="text-2xl font-semibold text-purple-700 mb-4">Gen AI, MCP and Agent Research</h2>
                     <ul class="space-y-4 text-left list-none pl-0">
                         <li>
                             <a href="https://showdme-gtm-plan.github.io/AI-Powered,%20Compliant%20Healthcare%20Training%20Blueprint.html" class="btn-link w-full">
                                 AI-Powered, Compliant Healthcare Training Blueprint
                             </a>
-                        </li>
+                            </li>
                     </ul>
                 </div>
 
-                <div class="p-6 bg-yellow-50 rounded-lg shadow-sm"> <h2 class="text-2xl font-semibold text-yellow-700 mb-4">SNF Platform Integration Research</h2>
+                <div class="p-6 bg-yellow-50 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-semibold text-yellow-700 mb-4">SNF Platform Integration Research</h2>
                     <ul class="space-y-4 text-left list-none pl-0">
                         <li>
-                            <a href="#" class="btn-link w-full" onclick="return false;">
-                                Page Coming Soon
+                            <a href="https://showdme-gtm-plan.github.io/SNF%20Platform%20Integration%20Research.html" class="btn-link w-full">
+                                HCM & EHR Platform Analysis
                             </a>
                         </li>
                     </ul>
                 </div>
-                </div>
+            </div>
 
         </div>
     </div>
