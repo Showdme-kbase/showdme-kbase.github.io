@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Vendor Analysis for LMS Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The application is designed as a top-down strategic dashboard. It starts with the highest-level summary (The Strategic Dichotomy and Recommended Roadmap), allowing users to immediately grasp the report's conclusions. The core of the app is an interactive Vendor Comparison Dashboard where users can filter and sort vendor "cards" based on key attributes. Clicking a card opens a detailed modal view with tabbed navigation, allowing for a deep dive without losing context. This is supported by a dynamic bar chart for direct visual comparison of quantitative metrics. This layered, interactive structure was chosen to transform a dense, linear report into an exploratory tool that supports strategic decision-making, catering to users who need a quick overview as well as those who require granular details. -->
+    <!-- Visualization & Content Choices: Report data is transformed for clarity and interaction. The vendor comparison table becomes interactive cards (Goal: Organize/Compare, Method: HTML/CSS/JS Filter, Justification: Easier to scan and filter than a static table). A dynamic bar chart (Goal: Compare, Method: Chart.js/Canvas, Justification: Provides instant visual comparison of quantified metrics like API maturity) allows users to switch between different comparison points. The detailed vendor text is broken into tabs within a modal (Goal: Inform, Method: JS show/hide, Justification: Prevents information overload and improves readability). The strategic roadmap is presented as a visual stepper (Goal: Inform, Method: HTML/CSS, Justification: More engaging and easier to follow than a list). All choices prioritize user interaction and comprehension. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; height: 400px; max-height: 50vh; }
+        .tab-active { border-color: #4f46e5; color: #4f46e5; }
+        .tab-inactive { border-color: transparent; color: #6b7280; }
+        .modal-content { scrollbar-width: thin; scrollbar-color: #a5b4fc #e0e7ff; }
+        .vendor-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .vendor-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">HCM & EHR Platform Analysis</h1>
+            <p class="mt-2 text-lg text-slate-600">An Interactive Dashboard for LMS Integration Strategy in Post-Acute Care</p>
+        </header>
+
+        <main>
+            <section id="strategic-overview" class="mb-16">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6 border-b pb-2">Strategic Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg text-indigo-700 mb-3">Healthcare-Native Specialists</h3>
+                        <p class="text-slate-600">Vendors like <strong class="font-semibold">Smartlinx, Viventium, and MatrixCare</strong> offer deep, purpose-built functionality for post-acute care. They are high-value targets due to market penetration but often require formal partnerships for integration.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg text-teal-700 mb-3">Horizontal HCM Giants</h3>
+                        <p class="text-slate-600">Global leaders like <strong class="font-semibold">UKG, ADP, Workday, and Paylocity</strong> provide mature, accessible API ecosystems. The challenge is assessing the specificity of their healthcare modules for nuanced compliance needs.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 text-center">Recommended Integration Roadmap</h3>
+                     <div class="relative">
+                        <div class="absolute left-1/2 -translate-x-1/2 w-0.5 h-full bg-slate-300 hidden md:block" aria-hidden="true"></div>
+                        <div class="relative space-y-12 md:space-y-0 md:flex md:justify-between">
+                            <div class="md:w-1/3 text-center md:text-right md:pr-8">
+                                <div class="inline-block bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold mx-auto md:mr-0 md:ml-auto">1</div>
+                                <h4 class="font-bold text-lg mt-3">Phase 1: Secure Initial Footprint</h4>
+                                <p class="text-slate-600 mt-1">Target <strong class="font-semibold">ADP & Paylocity</strong> for their low-friction, transparent APIs and marketplace models. This offers the fastest path to market.</p>
+                            </div>
+                             <div class="md:w-1/3 text-center md:px-4">
+                                <div class="inline-block bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold mx-auto">2</div>
+                                <h4 class="font-bold text-lg mt-3">Phase 2: Capture Market Leaders</h4>
+                                <p class="text-slate-600 mt-1">Pursue <strong class="font-semibold">MatrixCare & UKG Ready</strong>. MatrixCare is the top EHR target for its clinical data linkage potential. Longer lead times require concurrent effort.</p>
+                            </div>
+                            <div class="md:w-1/3 text-center md:text-left md:pl-8">
+                                <div class="inline-block bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold mx-auto md:ml-0 md:mr-auto">3</div>
+                                <h4 class="font-bold text-lg mt-3">Phase 3: Penetrate Niche Specialists</h4>
+                                <p class="text-slate-600 mt-1">Engage <strong class="font-semibold">Smartlinx & Viventium</strong>. High-risk, high-reward targets requiring business-development-led partnerships due to opaque integration paths.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vendor-dashboard" class="mb-16">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 border-b pb-2">Vendor Comparison Dashboard</h2>
+                <p class="text-slate-600 mb-6">Filter vendors by key attributes or click any card to view a detailed analysis.</p>
+                <div id="filters" class="flex flex-wrap gap-2 mb-8">
+                    <button data-filter="all" class="filter-btn bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold">All Vendors</button>
+                    <button data-filter="tier-1" class="filter-btn bg-white text-slate-700 px-4 py-2 rounded-full text-sm font-semibold border border-slate-300">Tier 1 (Low Effort)</button>
+                    <button data-filter="tier-2" class="filter-btn bg-white text-slate-700 px-4 py-2 rounded-full text-sm font-semibold border border-slate-300">Tier 2 (Medium Effort)</button>
+                    <button data-filter="tier-3" class="filter-btn bg-white text-slate-700 px-4 py-2 rounded-full text-sm font-semibold border border-slate-300">Tier 3 (High Effort)</button>
+                    <button data-filter="has-lms" class="filter-btn bg-white text-slate-700 px-4 py-2 rounded-full text-sm font-semibold border border-slate-300">Has Native LMS</button>
+                    <button data-filter="no-lms" class="filter-btn bg-white text-slate-700 px-4 py-2 rounded-full text-sm font-semibold border border-slate-300">No/Partner LMS</button>
+                </div>
+                <div id="vendor-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                </div>
+            </section>
+            
+            <section id="charts" class="mb-16 bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 text-center">Comparative Analysis</h2>
+                <div class="flex justify-center mb-6">
+                    <select id="chart-metric-selector" class="block w-full max-w-xs p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="apiMaturity" selected>Compare by API Maturity</option>
+                        <option value="integrationPriority">Compare by Integration Priority</option>
+                        <option value="marketFocus">Compare by SNF/Home Health Focus</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="vendor-comparison-chart"></canvas>
+                </div>
+                 <p class="text-center mt-4 text-sm text-slate-500">Scores are quantified from the report (3=High, 2=Medium, 1=Low).</p>
+            </section>
+        </main>
+    </div>
+
+    <div id="vendor-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
+            <header class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-xl font-bold"></h3>
+                <button id="modal-close" class="text-slate-500 hover:text-slate-800">&times;</button>
+            </header>
+            <div id="modal-content" class="p-6 overflow-y-auto modal-content flex-grow">
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const vendorsData = [
+                {
+                    id: 'smartlinx',
+                    name: 'Smartlinx Solutions',
+                    type: 'Healthcare-Specific WFM/HCM',
+                    tags: ['tier-3', 'no-lms'],
+                    priority: 3,
+                    api: 1,
+                    focus: 3,
+                    summary: 'Purpose-built WFM/HCM for post-acute care with deep market penetration. Lacks a native LMS, making it a high-value but high-friction target.',
+                    details: {
+                        overview: `
+                            <p class="mb-4">Smartlinx Solutions is a privately held SaaS company with a mission to create a purpose-built workforce management solution for the senior care industry. Its core offering is a unified suite combining workforce management (WFM) and human capital management (HCM) functionalities, engineered to help skilled nursing, senior living, and other post-acute care providers manage their workforce and control labor costs.</p>
+                            <p>With over 4,000 senior care leaders using their solutions, Smartlinx has deep entrenchment in the target market, making it a critical platform to consider.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">A significant opportunity exists as Smartlinx <strong class="text-indigo-600">lacks a native, customer-facing LMS module</strong>. Their "Smartlinx University" is for training on their own platform. While their scheduling tools can consider employee qualifications (implying a data model exists), they do not offer a system for clients to manage their own employee training and compliance.</p>
+                            <div class="bg-indigo-50 p-4 rounded-md">
+                                <p class="font-semibold">Key Takeaway:</p>
+                                <p>The absence of a competing LMS makes an integrated solution highly complementary and non-threatening to their ecosystem.</p>
+                            </div>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">The integration landscape is <strong class="text-red-600">opaque and high-risk</strong>. There is no public developer portal or API documentation. Integration is almost certainly a managed process requiring a formal partnership and professional services engagement.</p>
+                            <p>The technical path (e.g., private REST/SOAP API, SFTP) must be uncovered through direct business development contact.</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Prioritize Business Development:</strong> Initiate contact through partnership channels to propose a formal technology partnership.</li>
+                                <li><strong>Technical Discovery:</strong> The primary goal is to uncover the actual integration mechanism.</li>
+                                <li><strong>Data Model Scope:</strong> Aim to pull the core employee roster and push structured completion data (Certificate Name, Dates, URL) back into their existing qualifications record, which is used by the Schedule Optimizer.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'viventium',
+                    name: 'Viventium',
+                    type: 'Healthcare-Specific HCM',
+                    tags: ['tier-3', 'has-lms'],
+                    priority: 3,
+                    api: 1,
+                    focus: 3,
+                    summary: 'Specialized all-in-one HCM for health services with a strong market focus. Has a basic native LMS but excellent skills tracking capabilities.',
+                    details: {
+                        overview: `<p class="mb-4">Viventium is a specialized, cloud-based HCM software provider with a dedicated focus on the U.S. health services industry, particularly home-based and facility-based care. They boast a high client retention rate and strong credibility within the post-acute care community.</p>`,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">Viventium presents a more complex landscape as it offers a <strong class="text-amber-600">native Learning Management module</strong>. While its sophistication is unknown, its existence creates competitive overlap. However, a highly compelling feature is the platform's native ability to <strong class="text-green-600">digitally track license expirations, TB screenings, and skills check-offs</strong>. This confirms a dedicated data model exists for certification data, providing a perfect technical endpoint.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">Integration is <strong class="text-red-600">partner-gated</strong>. While "API data accessibility" is listed as a feature, there is no public developer portal. Access is through formal partnership channels. They have a well-defined framework, as evidenced by existing integrations with partners like Apploi and DailyPay.</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Position as an Enhancement:</strong> Frame the integration as a way for clients to upgrade their compliance with a best-in-class assessment engine that complements Viventium's features.</li>
+                                <li><strong>Pursue Formal Partnership:</strong> Engage their business development team with a focus on collaboration.</li>
+                                <li><strong>Deep Integration Goal:</strong> Leverage their API to populate their native license and skills-tracking objects directly, creating a fully automated compliance lifecycle.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'matrixcare',
+                    name: 'MatrixCare (inc. Sigmacare)',
+                    type: 'Healthcare-Specific EHR',
+                    tags: ['tier-2', 'no-lms'],
+                    priority: 3,
+                    api: 2,
+                    focus: 3,
+                    summary: 'A dominant EHR in post-acute care. No native LMS, relying on partners like Relias. The most strategic target for linking competency to clinical outcomes.',
+                     details: {
+                        overview: `
+                            <p class="mb-4">MatrixCare is a dominant Electronic Health Record (EHR) provider in the post-acute care market, holding the second-largest market share. Its platform is the central system of record for clinical and financial operations. Note: Sigmacare is now an integrated part of the MatrixCare ecosystem.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">MatrixCare has <strong class="text-indigo-600">no native LMS or competency module</strong>, creating a clear and significant opportunity. This gap is validated by their formal partnership with <strong class="font-semibold">Relias</strong>, a leading healthcare education provider, who is listed in the official MatrixCare Partner Marketplace. This proves the business model and customer demand for integrated LMS solutions.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">Integration is mature, structured, and <strong class="text-amber-600">partner-centric</strong> via the MatrixCare Partner Marketplace. While not a self-service model, the technical foundation is modern, with support for <strong class="text-green-600">FHIR-enabled integrations</strong>. A formal application process exists to "Join the Partner Marketplace."</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Become a Certified Partner:</strong> This is the primary strategic goal. Follow their formal process to gain access to developer resources and API documentation.</li>
+                                <li><strong>Architect for Healthcare Standards:</strong> Plan for a FHIR-based integration to align with their technical strategy.</li>
+                                <li><strong>Link Competency to Clinical Outcomes:</strong> The ultimate goal is to push structured competency data to the practitioner's profile, potentially using the FHIR PractitionerRole resource. This allows for correlating training data with clinical outcomes from their analytics module—a unique and powerful value proposition.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'ukg_ready',
+                    name: 'UKG Ready',
+                    type: 'Horizontal HCM',
+                    tags: ['tier-2', 'has-lms'],
+                    priority: 2,
+                    api: 3,
+                    focus: 3,
+                    summary: 'An all-in-one HCM with massive healthcare penetration. Has a full native LMS, creating a "coopetition" scenario. Open API is a major advantage.',
+                     details: {
+                        overview: `
+                            <p class="mb-4">UKG Ready is an all-in-one, cloud-based HR solution for small and mid-sized businesses, with a formidable presence in healthcare (over 3,500 hospitals and 10,000 post-acute care facilities). They have a dedicated vertical for "Post-Acute and Senior Living" and are used for core compliance tasks like PBJ reporting.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">UKG Ready features a <strong class="text-amber-600">native and integrated Learning module</strong>, positioning it as a direct competitor. It connects compliance and training in a single system. The platform also includes an <strong class="text-green-600">Attestation feature</strong>, a powerful compliance tool for acknowledging policies and procedures, which presents a unique integration opportunity.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">UKG provides a mature, public, and well-documented ecosystem through its <strong class="text-green-600">Developer Hub</strong>. It supports both REST and SOAP APIs, and importantly, <strong class="font-semibold">Webhooks</strong> for real-time event notifications (e.g., employee.created), which is ideal for user synchronization.</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Adopt a Technical-First Model:</strong> Use the public Developer Hub for a self-service approach to development and testing.</li>
+                                <li><strong>Architect Around Webhooks:</strong> Design the user sync process to be event-driven for efficiency and real-time updates.</li>
+                                <li><strong>Differentiate on Assessment Quality:</strong> Position as a specialized, best-of-breed assessment engine that feeds validated data into UKG's system of record.</li>
+                                <li><strong>Leverage Attestation:</strong> Create a powerful workflow where completing a course in the LMS automatically triggers a formal attestation request in the UKG app.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'adp_workforce_now',
+                    name: 'ADP Workforce Now',
+                    type: 'Horizontal HCM',
+                    tags: ['tier-1', 'no-lms'],
+                    priority: 3,
+                    api: 3,
+                    focus: 2,
+                    summary: 'A dominant mid-market HCM. Relies on a partner (SAP Litmos) for its LMS, creating a prime opportunity. Best-in-class, transparent API ecosystem.',
+                    details: {
+                         overview: `
+                            <p class="mb-4">ADP Workforce Now is a flagship all-in-one HCM platform for mid-sized businesses. ADP is a global leader, serving over 45,000 healthcare organizations. While a horizontal platform, it has a significant practice focused on extended care facilities.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">ADP's strategy is <strong class="text-indigo-600">partner-centric</strong>. Comprehensive learning management is delivered through a tight partnership with <strong class="font-semibold">SAP Litmos</strong>, sold via the ADP Marketplace. This validates the demand for third-party LMS solutions and provides a clear template for partnership. Your LMS would not be seen as a threat, but as a valuable extension.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">ADP offers one of the <strong class="text-green-600">most mature, transparent, and developer-friendly ecosystems</strong>. Their self-service <strong class="font-semibold">ADP API Central</strong> provides rapid access to REST APIs with modern OAuth 2.0 security. Uniquely, they offer <strong class="font-semibold">transparent, public pricing</strong> for API access, de-risking financial planning.</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Lowest-Friction Opportunity:</strong> This is an ideal Tier 1 target.</li>
+                                <li><strong>Engage the ADP Marketplace:</strong> The primary business goal is to become a listed partner for marketing exposure and a trusted sales channel.</li>
+                                <li><strong>Utilize API Central:</strong> Development can begin immediately by purchasing access to their developer platform.</li>
+                                <li><strong>Leverage the Worker Management API:</strong> Use their well-documented endpoints to pull worker data and push structured certification data back to the employee's talent profile, which is then used by ADP's native scheduling tools.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'workday',
+                    name: 'Workday',
+                    type: 'Horizontal HCM',
+                    tags: ['tier-3', 'has-lms'],
+                    priority: 1,
+                    api: 2,
+                    focus: 2,
+                    summary: 'A premium, enterprise-level HCM with an advanced native LMS (Workday Learning & Skills Cloud). High competitive overlap and integration complexity.',
+                    details: {
+                        overview: `
+                            <p class="mb-4">Workday is a premier, enterprise-level cloud vendor for Financials and HCM, holding the #1 market share globally by revenue. They have a dedicated "Senior Living and Post-Acute Care" focus and are a top choice for large health systems that operate post-acute facilities.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">Workday's native capabilities are <strong class="text-red-600">exceptionally advanced and a major competitive hurdle</strong>. They offer <strong class="font-semibold">Workday Learning</strong>, a powerful, AI-driven module, and the <strong class="font-semibold">Workday Skills Cloud</strong>, which uses machine learning to manage workforce skills at a granular level. They already excel at managing competency data.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">The framework is powerful but <strong class="text-amber-600">notoriously complex</strong>. It uses a mix of SOAP and newer REST APIs. Access is tightly controlled through the <strong class="font-semibold">Workday Community</strong> portal and requires a formal partner relationship. Authentication is sophisticated, requiring meticulous configuration of Integration System Users (ISUs) and Security Groups (ISSGs).</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Lower Priority Target:</strong> Due to high competitive overlap and technical complexity, this should not be a proactive priority.</li>
+                                <li><strong>Partnership is Mandatory:</strong> Integration is not feasible without a formal technology partner relationship.</li>
+                                <li><strong>Position for Data Enrichment:</strong> The only viable strategy is to position your LMS as a specialized assessment engine that feeds high-fidelity, validated clinical competency data into the Workday Skills Cloud, enriching their ecosystem rather than trying to replace it.</li>
+                            </ul>
+                        `
+                    }
+                },
+                {
+                    id: 'paylocity',
+                    name: 'Paylocity',
+                    type: 'Horizontal HCM',
+                    tags: ['tier-1', 'has-lms'],
+                    priority: 3,
+                    api: 3,
+                    focus: 2,
+                    summary: 'Mid-market HCM focused on user experience. Has a full-featured native LMS but also an open, developer-friendly API and marketplace.',
+                    details: {
+                        overview: `
+                            <p class="mb-4">Paylocity is a prominent cloud-based HCM provider for the U.S. mid-market, known for its user-friendly, unified platform. They have a dedicated Healthcare industry vertical and target key pain points like staffing shortages and continuous training requirements.</p>
+                        `,
+                        competency: `
+                            <h4 class="font-semibold text-lg mb-2">Competency & Training Capabilities</h4>
+                            <p class="mb-4">Paylocity offers a <strong class="text-amber-600">full-featured, native LMS</strong> as a core part of its Talent suite, making it a direct competitor. It supports SCORM/AICC import and has a large content library via a Go1 integration. Critically, its <strong class="text-green-600">Compliance Dashboard</strong> has built-in capability to automatically track skill and certification expiration dates, providing a clear integration endpoint.</p>
+                        `,
+                        integration: `
+                            <h4 class="font-semibold text-lg mb-2">Integration & API Analysis</h4>
+                            <p class="mb-4">Paylocity has a modern, open, and developer-centric approach. They offer a <strong class="text-green-600">public-facing Developer Resources portal</strong> with comprehensive documentation for their REST APIs and <strong class="font-semibold">Webhooks</strong>. Like ADP, they have a Marketplace showcasing pre-built integrations, demonstrating a commitment to an open ecosystem.</p>
+                        `,
+                        strategy: `
+                            <h4 class="font-semibold text-lg mb-2">Strategic Approach</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><strong>Ideal Tier 1 Target:</strong> Represents a "coopetition" scenario where their open architecture makes them highly accessible despite having a native LMS.</li>
+                                <li><strong>Developer-Led Strategy:</strong> Use the public developer portal to begin building a proof-of-concept immediately.</li>
+                                <li><strong>Focus on Specialization:</strong> Position your LMS as a "specialty assessment engine" for complex clinical skills that their more general LMS doesn't cover.</li>
+                                <li><strong>Direct Compliance Impact:</strong> Push validated completion data directly to their certification tracking system via the API to automatically populate their Compliance Dashboard, creating a seamless workflow.</li>
+                            </ul>
+                        `
+                    }
+                }
+            ];
+
+            const vendorGrid = document.getElementById('vendor-grid');
+            const filters = document.getElementById('filters');
+            const modal = document.getElementById('vendor-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalClose = document.getElementById('modal-close');
+            const chartMetricSelector = document.getElementById('chart-metric-selector');
+
+            let activeFilter = 'all';
+            let chartInstance = null;
+            
+            function getPillColor(value) {
+                if (value >= 3) return 'bg-green-100 text-green-800';
+                if (value === 2) return 'bg-amber-100 text-amber-800';
+                return 'bg-red-100 text-red-800';
+            }
+
+            function renderVendorCards() {
+                vendorGrid.innerHTML = '';
+                const filteredVendors = vendorsData.filter(vendor => {
+                    if (activeFilter === 'all') return true;
+                    return vendor.tags.includes(activeFilter);
+                });
+
+                filteredVendors.forEach(vendor => {
+                    const card = document.createElement('div');
+                    card.className = 'vendor-card bg-white p-6 rounded-lg shadow-sm cursor-pointer flex flex-col';
+                    card.dataset.vendorId = vendor.id;
+                    card.innerHTML = `
+                        <h3 class="font-bold text-lg text-slate-900 mb-2">${vendor.name}</h3>
+                        <p class="text-slate-600 text-sm mb-4 flex-grow">${vendor.summary}</p>
+                        <div class="mt-auto pt-4 border-t border-slate-200">
+                             <p class="text-xs text-slate-500 mb-2 font-medium">Platform Type: ${vendor.type}</p>
+                             <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                                <span class="px-2 py-1 rounded-full ${getPillColor(vendor.api)}">API Maturity: ${vendor.api}</span>
+                                <span class="px-2 py-1 rounded-full ${getPillColor(vendor.priority)}">Priority: ${vendor.priority}</span>
+                                <span class="px-2 py-1 rounded-full ${getPillColor(vendor.focus)}">Focus: ${vendor.focus}</span>
+                            </div>
+                        </div>
+                    `;
+                    vendorGrid.appendChild(card);
+                });
+            }
+
+            function showVendorDetails(vendorId) {
+                const vendor = vendorsData.find(v => v.id === vendorId);
+                if (!vendor) return;
+
+                modalTitle.textContent = vendor.name;
+                modalContent.innerHTML = `
+                    <div class="border-b border-slate-200 mb-4">
+                        <nav id="modal-tabs" class="-mb-px flex space-x-6">
+                           <button data-tab="overview" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm tab-active">Overview</button>
+                           <button data-tab="competency" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm tab-inactive">Competency & Training</button>
+                           <button data-tab="integration" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm tab-inactive">Integration</button>
+                           <button data-tab="strategy" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm tab-inactive">Strategic Approach</button>
+                        </nav>
+                    </div>
+                    <div>
+                        <div id="tab-overview" class="tab-content">${vendor.details.overview}</div>
+                        <div id="tab-competency" class="tab-content hidden">${vendor.details.competency}</div>
+                        <div id="tab-integration" class="tab-content hidden">${vendor.details.integration}</div>
+                        <div id="tab-strategy" class="tab-content hidden">${vendor.details.strategy}</div>
+                    </div>
+                `;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                document.getElementById('modal-tabs').addEventListener('click', e => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const tabId = e.target.dataset.tab;
+                        document.querySelectorAll('#modal-tabs button').forEach(btn => {
+                            btn.classList.remove('tab-active');
+                            btn.classList.add('tab-inactive');
+                        });
+                        e.target.classList.add('tab-active');
+                        e.target.classList.remove('tab-inactive');
+                        
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                           content.classList.add('hidden');
+                        });
+                        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+                    }
+                });
+            }
+            
+            function renderChart() {
+                const metric = chartMetricSelector.value;
+                const metricKey = metric === 'apiMaturity' ? 'api' : (metric === 'integrationPriority' ? 'priority' : 'focus');
+                
+                const sortedData = [...vendorsData].sort((a, b) => b[metricKey] - a[metricKey]);
+                
+                const labels = sortedData.map(v => v.name);
+                const data = sortedData.map(v => v[metricKey]);
+                const backgroundColors = data.map(val => {
+                    if (val >= 3) return 'rgba(79, 70, 229, 0.8)'; // Indigo
+                    if (val === 2) return 'rgba(217, 119, 6, 0.8)'; // Amber
+                    return 'rgba(220, 38, 38, 0.8)'; // Red
+                });
+                 const borderColors = data.map(val => {
+                    if (val >= 3) return 'rgba(79, 70, 229, 1)';
+                    if (val === 2) return 'rgba(217, 119, 6, 1)';
+                    return 'rgba(220, 38, 38, 1)';
+                });
+
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                const ctx = document.getElementById('vendor-comparison-chart').getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: chartMetricSelector.options[chartMetricSelector.selectedIndex].text.replace('Compare by ', ''),
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 3,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        if (value === 1) return 'Low';
+                                        if (value === 2) return 'Medium';
+                                        if (value === 3) return 'High';
+                                        return '';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        const value = context.raw;
+                                        if (value === 1) label += 'Low';
+                                        if (value === 2) label += 'Medium';
+                                        if (value === 3) label += 'High';
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            filters.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    activeFilter = e.target.dataset.filter;
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('bg-indigo-600', 'text-white');
+                        btn.classList.add('bg-white', 'text-slate-700');
+                    });
+                    e.target.classList.add('bg-indigo-600', 'text-white');
+                    e.target.classList.remove('bg-white', 'text-slate-700');
+                    renderVendorCards();
+                }
+            });
+
+            vendorGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.vendor-card');
+                if (card) {
+                    showVendorDetails(card.dataset.vendorId);
+                }
+            });
+            
+            modalClose.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+            
+            chartMetricSelector.addEventListener('change', renderChart);
+
+            renderVendorCards();
+            renderChart();
+        });
+    </script>
+</body>
+</html>
