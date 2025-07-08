@@ -1,6 +1,7 @@
 # Showdme: Strategic Planning & Research Hub
 
-![Showdme Logo](https://github.com/showdme-gtm-plan/showdme-gtm-plan.github.io/raw/main/image_0ca029.png)
+![image](https://github.com/user-attachments/assets/c5ef9612-9364-425b-98f6-5056e9a80ba1)
+
 
 Welcome to the central hub for Showdme's strategic documentation and research. This repository offers a curated collection of interactive web pages designed to provide deep insights into our Go-to-Market strategies, product development, compliance initiatives, and cutting-edge research.
 
