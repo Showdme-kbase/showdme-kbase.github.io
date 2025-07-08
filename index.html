@@ -79,6 +79,7 @@
             font-family: 'Inter', sans-serif;
             /* background-color and color are now applied via inline style below */
             line-height: 1.6;
+            padding-top: 80px; /* Adjust this value to be slightly more than the header's height + padding */
         }
         .container {
             max-width: 960px;
@@ -110,9 +111,36 @@
             background-color: var(--text-link-color); /* Explicitly use company text link color for hover */
             transform: translateY(-1px);
         }
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--background-color-3); /* Using a light background from your palette */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem; /* Padding top/bottom and left/right */
+            z-index: 1000; /* Ensure it stays on top of other content */
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container {
+            /* If you want to control the logo's position within the header */
+        }
+
+        .logo {
+            height: 40px; /* Adjust logo height as needed */
+            width: auto; /* Maintain aspect ratio */
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen" style="background-color: var(--background-color-1); color: var(--text-color-1);">
+    <header class="fixed-header">
+        <div class="logo-container">
+            <img src="showdmelogo.png" alt="Showdme Logo" class="logo">
+        </div>
+    </header>
+
     <div class="container text-center">
         <div class="card" style="background-color: var(--card-background); border: 1px solid var(--border-color);">
             <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
