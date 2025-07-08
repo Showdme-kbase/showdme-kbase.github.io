@@ -1,4 +1,4 @@
-# Showdme: Strategic Planning & Research Hub
+# Showdme Planning, Research & User Guides
 
 ![image](https://github.com/user-attachments/assets/c5ef9612-9364-425b-98f6-5056e9a80ba1)
 
