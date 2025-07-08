@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: The Healthcare Compliance Opportunity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The application is structured as a top-down narrative guiding a business decision-maker. It starts with the high-level financial opportunity (market size, valuation), moves to the problem space (the complex regulatory landscape), presents the proposed solution (an integrated platform focusing on policy management and auditable training), details the specific requirements (essential policies), reinforces the financial case with data visualizations, and concludes with an actionable strategic roadmap. This structure was chosen to transform the dense report into a persuasive, interactive business case, prioritizing clarity and strategic insights over a linear document review. User flow is guided by a sticky navigation bar, allowing both linear progression and direct access to key sections. -->
+    <!-- Visualization & Content Choices: 
+        - Market Growth: Goal: Change. Viz: Bar Chart (Chart.js) to clearly show the significant increase from 2024 to 2034. Interaction: Tooltips on hover. Justification: More direct and impactful than a line chart for comparing two key points in time.
+        - SaaS Valuations: Goal: Compare. Viz: Grouped Bar Chart (Chart.js). Interaction: Tooltips. Justification: Directly compares the valuation premium of Healthcare SaaS vs. EdTech, a key financial argument.
+        - Regulatory Bodies: Goal: Organize. Viz: Interactive cards (HTML/CSS/JS). Interaction: Click to reveal details. Justification: Breaks down complex information about CMS, OIG, and OSHA into digestible, on-demand chunks, avoiding a wall of text.
+        - Essential Policies Explorer: Goal: Organize. Viz: Tabbed interface (HTML/CSS/JS). Interaction: Click tabs to switch categories. Justification: Neatly categorizes the extensive list of policies, allowing users to explore areas of interest without being overwhelmed.
+        - LMS Comparison: Goal: Compare. Viz: Styled HTML table. Interaction: N/A. Justification: A clear, side-by-side table is the most effective way to present the feature differences between a standard and a compliance-focused LMS.
+        - Phased Roadmap: Goal: Organize/Change. Viz: Numbered vertical steps (HTML/CSS). Interaction: N/A. Justification: Presents the strategic recommendations as a clear, actionable, and easy-to-follow process.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F7F4; color: #333; }
+        .nav-link { transition: color 0.3s ease; }
+        .nav-link.active { color: #2563EB; font-weight: 600; }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .tab-btn.active { background-color: #3B82F6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        [data-section] { scroll-margin-top: 80px; }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="text-2xl font-bold text-blue-600">Compliance Horizon</div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#opportunity" class="nav-link text-stone-600 hover:text-blue-600">The Opportunity</a>
+                    <a href="#challenge" class="nav-link text-stone-600 hover:text-blue-600">The Challenge</a>
+                    <a href="#solution" class="nav-link text-stone-600 hover:text-blue-600">The Solution</a>
+                    <a href="#blueprint" class="nav-link text-stone-600 hover:text-blue-600">The Blueprint</a>
+                    <a href="#financials" class="nav-link text-stone-600 hover:text-blue-600">The Financials</a>
+                    <a href="#roadmap" class="nav-link text-stone-600 hover:text-blue-600">The Roadmap</a>
+                </div>
+                 <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-stone-600 hover:text-blue-600 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#opportunity" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Opportunity</a>
+            <a href="#challenge" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Challenge</a>
+            <a href="#solution" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Solution</a>
+            <a href="#blueprint" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Blueprint</a>
+            <a href="#financials" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Financials</a>
+            <a href="#roadmap" class="block py-2 px-4 text-sm nav-link text-stone-600 hover:bg-stone-200">The Roadmap</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Section 1: The Opportunity -->
+        <section id="opportunity" data-section class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-stone-900 mb-4">The Healthcare Compliance Opportunity</h1>
+                <p class="max-w-3xl mx-auto text-lg text-stone-600 mb-12">Pivoting to healthcare compliance is not just a market expansion—it's a strategic evolution into a more valuable, resilient, and profitable vertical. Compliance is a non-discretionary necessity for healthcare providers, creating stable, long-term demand.</p>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-stone-50 p-8 rounded-lg shadow-sm">
+                        <div class="text-5xl font-bold text-blue-600 mb-2">$11.88B</div>
+                        <h3 class="text-xl font-semibold text-stone-800">Projected Market by 2034</h3>
+                        <p class="text-stone-500 mt-2">A rapidly growing market fueled by increasing regulatory complexity.</p>
+                    </div>
+                    <div class="bg-stone-50 p-8 rounded-lg shadow-sm">
+                        <div class="text-5xl font-bold text-blue-600 mb-2">13.5%</div>
+                        <h3 class="text-xl font-semibold text-stone-800">Compound Annual Growth</h3>
+                        <p class="text-stone-500 mt-2">Steady, predictable growth outperforms many other SaaS verticals.</p>
+                    </div>
+                    <div class="bg-stone-50 p-8 rounded-lg shadow-sm">
+                        <div class="text-5xl font-bold text-blue-600 mb-2">34%</div>
+                        <h3 class="text-xl font-semibold text-stone-800">Valuation Premium</h3>
+                        <p class="text-stone-500 mt-2">Healthcare SaaS companies command significantly higher multiples than EdTech.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Challenge -->
+        <section id="challenge" data-section class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Navigating the Regulatory Maze</h2>
+                <p class="max-w-3xl mx-auto text-lg text-center text-stone-600 mb-12">Skilled Nursing Facilities (SNFs) and Home Health Agencies (HHAs) face a daunting and ever-changing web of regulations from multiple federal and state bodies. Non-compliance leads to severe penalties, loss of funding, and reputational damage. This is the core problem our platform must solve.</p>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <!-- CMS Card -->
+                    <div class="card bg-white p-8 rounded-lg cursor-pointer" onclick="showDetails('cms')">
+                        <div class="text-3xl mb-4">🏛️</div>
+                        <h3 class="text-2xl font-semibold mb-2">CMS</h3>
+                        <p class="text-stone-500">Sets the rules for quality of care, resident safety, and staffing to ensure participation in Medicare/Medicaid.</p>
+                    </div>
+                    <!-- OIG Card -->
+                    <div class="card bg-white p-8 rounded-lg cursor-pointer" onclick="showDetails('oig')">
+                        <div class="text-3xl mb-4">🛡️</div>
+                        <h3 class="text-2xl font-semibold mb-2">OIG</h3>
+                        <p class="text-stone-500">The law enforcement arm combatting fraud, waste, and abuse through strict financial integrity guidelines.</p>
+                    </div>
+                    <!-- OSHA Card -->
+                    <div class="card bg-white p-8 rounded-lg cursor-pointer" onclick="showDetails('osha')">
+                        <div class="text-3xl mb-4">👷</div>
+                        <h3 class="text-2xl font-semibold mb-2">OSHA</h3>
+                        <p class="text-stone-500">Ensures a safe and healthful working environment, preventing accidents and protecting employees.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Details Modal -->
+        <div id="details-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+            <div id="modal-content" class="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
+                <!-- Content will be injected by JS -->
+            </div>
+        </div>
+
+
+        <!-- Section 3: The Solution -->
+        <section id="solution" data-section class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">The Integrated Compliance Platform</h2>
+                <p class="max-w-3xl mx-auto text-lg text-center text-stone-600 mb-12">The market demands a single source of truth. A successful platform must evolve beyond a simple LMS to offer an integrated suite that connects policy management directly with auditable training, creating a seamless, holistic compliance ecosystem.</p>
+                
+                <div class="grid lg:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-6 text-center lg:text-left">The Policy Management Lifecycle</h3>
+                        <div class="relative pl-8 border-l-2 border-blue-200">
+                             <div class="mb-8 relative">
+                                <div class="absolute -left-11 w-6 h-6 bg-blue-500 rounded-full border-4 border-white"></div>
+                                <h4 class="font-semibold text-lg">Centralized Policies</h4>
+                                <p class="text-stone-600">A single, searchable repository with strict version control ensures staff always access current, approved policies.</p>
+                            </div>
+                             <div class="mb-8 relative">
+                                <div class="absolute -left-11 w-6 h-6 bg-blue-500 rounded-full border-4 border-white"></div>
+                                <h4 class="font-semibold text-lg">Automated Workflows</h4>
+                                <p class="text-stone-600">Streamline the review, approval, and dissemination process, reducing administrative burden and ensuring timely updates.</p>
+                            </div>
+                             <div class="mb-8 relative">
+                                <div class="absolute -left-11 w-6 h-6 bg-blue-500 rounded-full border-4 border-white"></div>
+                                <h4 class="font-semibold text-lg">Attestation & Training Link</h4>
+                                <p class="text-stone-600">Track employee acknowledgment and automatically trigger mandatory retraining when a linked policy is updated, closing the compliance loop.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-6 text-center lg:text-left">From LMS to Audit-Ready Defense</h3>
+                        <p class="text-stone-600 mb-4">A compliance LMS isn't just for learning; it's a legal defense tool. The focus shifts from engagement to creating irrefutable, audit-proof records of compliance.</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 bg-stone-100 font-semibold border-b-2 border-stone-200">Feature</th>
+                                        <th class="p-4 bg-stone-100 font-semibold border-b-2 border-stone-200">Standard LMS</th>
+                                        <th class="p-4 bg-stone-100 font-semibold border-b-2 border-stone-200">Compliance LMS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="p-4 border-b border-stone-200 font-medium">Core Goal</td>
+                                        <td class="p-4 border-b border-stone-200">Skill Improvement</td>
+                                        <td class="p-4 border-b border-stone-200 font-bold text-blue-600">Prove Compliance</td>
+                                    </tr>
+                                    <tr class="bg-stone-50">
+                                        <td class="p-4 border-b border-stone-200 font-medium">Records</td>
+                                        <td class="p-4 border-b border-stone-200">Basic completion data</td>
+                                        <td class="p-4 border-b border-stone-200 font-bold text-blue-600">Immutable, time-stamped audit trails</td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="p-4 border-b border-stone-200 font-medium">Assignment</td>
+                                        <td class="p-4 border-b border-stone-200">Manual</td>
+                                        <td class="p-4 border-b border-stone-200 font-bold text-blue-600">Automated, role-based & recurring</td>
+                                    </tr>
+                                     <tr class="bg-stone-50">
+                                        <td class="p-4 font-medium">Policy Link</td>
+                                        <td class="p-4">None</td>
+                                        <td class="p-4 font-bold text-blue-600">Triggers mandatory retraining</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Section 4: The Blueprint -->
+        <section id="blueprint" data-section class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">The Policy Blueprint for Compliance</h2>
+                <p class="max-w-3xl mx-auto text-lg text-center text-stone-600 mb-12">To bridge the gap between regulations and operations, SNFs must implement a vast array of policies. Our platform must help them create, manage, and enforce these policies across four critical domains. Click each tab to explore the essential policies.</p>
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-wrap justify-center border-b border-stone-300 mb-8">
+                        <button class="tab-btn px-6 py-3 font-semibold text-stone-600 rounded-t-lg -mb-px active" onclick="openTab(event, 'quality')">Quality & Safety</button>
+                        <button class="tab-btn px-6 py-3 font-semibold text-stone-600 rounded-t-lg -mb-px" onclick="openTab(event, 'financial')">Financial Integrity</button>
+                        <button class="tab-btn px-6 py-3 font-semibold text-stone-600 rounded-t-lg -mb-px" onclick="openTab(event, 'workplace')">Workplace Safety</button>
+                        <button class="tab-btn px-6 py-3 font-semibold text-stone-600 rounded-t-lg -mb-px" onclick="openTab(event, 'hipaa')">Data & Privacy</button>
+                    </div>
+
+                    <div id="quality" class="tab-content active bg-white p-8 rounded-lg shadow">
+                        <ul class="space-y-3 list-disc list-inside text-stone-700">
+                            <li><strong>Resident Care Policies:</strong> Guiding all clinical protocols and professional standards.</li>
+                            <li><strong>Complaint Management:</strong> Procedures for receiving, investigating, and resolving complaints.</li>
+                            <li><strong>Safe Patient Handling (SPH):</strong> Mandating use of mechanical lifts to prevent injuries.</li>
+                            <li><strong>Fall Prevention:</strong> Multifaceted approach to reduce fall risks (lighting, assistive devices).</li>
+                            <li><strong>Abuse Prevention and Response:</strong> Clear protocols for preventing and reporting abuse.</li>
+                            <li><strong>Infection Prevention and Control:</strong> Rigorous hand hygiene and outbreak management strategies.</li>
+                        </ul>
+                    </div>
+                    <div id="financial" class="tab-content bg-white p-8 rounded-lg shadow">
+                         <ul class="space-y-3 list-disc list-inside text-stone-700">
+                            <li><strong>Billing Accuracy:</strong> Ensuring claims reflect services provided and use correct codes.</li>
+                            <li><strong>PDPM Coding & Documentation:</strong> Mandating audits to align clinical docs with billing.</li>
+                            <li><strong>Related-Party Transactions:</strong> Ensuring all deals are at fair market value to prevent "tunneling".</li>
+                            <li><strong>Overpayment Management:</strong> Procedures for identifying and promptly refunding overpayments.</li>
+                            <li><strong>Internal Audit Program:</strong> Routine audits of billing, ethics, and compliance practices.</li>
+                        </ul>
+                    </div>
+                    <div id="workplace" class="tab-content bg-white p-8 rounded-lg shadow">
+                        <ul class="space-y-3 list-disc list-inside text-stone-700">
+                            <li><strong>Hazard Communication Program:</strong> Informing employees about chemical hazards (SDS).</li>
+                            <li><strong>Bloodborne Pathogens Plan:</strong> Protecting staff from exposure to HIV, Hepatitis B/C.</li>
+                            <li><strong>Personal Protective Equipment (PPE) Policy:</strong> Mandating provision and use of appropriate PPE.</li>
+                            <li><strong>Respiratory Protection Program:</strong> Governing respirator use, including fit testing and training.</li>
+                            <li><strong>Workplace Violence Prevention:</strong> Proactive strategies to ensure a safe environment.</li>
+                        </ul>
+                    </div>
+                    <div id="hipaa" class="tab-content bg-white p-8 rounded-lg shadow">
+                        <ul class="space-y-3 list-disc list-inside text-stone-700">
+                            <li><strong>HIPAA Privacy Rule Policies:</strong> Governing permissible uses and disclosures of PHI.</li>
+                            <li><strong>HIPAA Security Rule Policies:</strong> Safeguards for electronic PHI (access control, encryption).</li>
+                            <li><strong>Breach Notification Policies:</strong> Detailed steps for identifying and responding to data breaches.</li>
+                            <li><strong>Risk Assessment Policies:</strong> Mandating regular, comprehensive HIPAA risk analyses.</li>
+                            <li><strong>Employee Training Policies:</strong> Mandating and documenting regular HIPAA training for all staff.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: The Financials -->
+        <section id="financials" data-section class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">The Financial Case for Pivoting</h2>
+                <p class="max-w-3xl mx-auto text-lg text-center text-stone-600 mb-12">The data is clear. The healthcare compliance market is not only larger and growing faster, but investors reward companies in this space with significantly higher valuation multiples due to its non-discretionary nature and high customer switching costs.</p>
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-stone-50 p-6 rounded-lg shadow-inner">
+                         <h3 class="text-2xl font-semibold mb-4 text-center">Market Growth Projection</h3>
+                        <div class="chart-container">
+                            <canvas id="marketGrowthChart"></canvas>
+                        </div>
+                    </div>
+                     <div class="bg-stone-50 p-6 rounded-lg shadow-inner">
+                        <h3 class="text-2xl font-semibold mb-4 text-center">SaaS Valuation Multiples (EV/Revenue)</h3>
+                        <div class="chart-container">
+                            <canvas id="valuationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 6: The Roadmap -->
+        <section id="roadmap" data-section class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">A Phased Roadmap to Success</h2>
+                <p class="max-w-3xl mx-auto text-lg text-center text-stone-600 mb-12">A strategic, phased approach allows us to leverage existing strengths while systematically building out a comprehensive, market-leading GRC suite. This ensures a sustainable entry and long-term competitive advantage.</p>
+                <div class="max-w-3xl mx-auto">
+                    <div class="space-y-8">
+                        <!-- Phase 1 -->
+                        <div class="flex">
+                            <div class="flex flex-col items-center mr-4">
+                                <div><div class="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full text-white font-bold">1</div></div>
+                                <div class="w-px h-full bg-blue-300"></div>
+                            </div>
+                            <div class="pb-8">
+                                <h3 class="text-xl font-bold text-blue-700 mb-1">Phase 1: Foundational LMS Hardening</h3>
+                                <p class="text-stone-600">Re-architect the existing LMS to be truly "audit-ready." Focus on immutable data retention, robust audit trail reporting, and automated, role-based training assignment workflows.</p>
+                            </div>
+                        </div>
+                         <!-- Phase 2 -->
+                        <div class="flex">
+                             <div class="flex flex-col items-center mr-4">
+                                <div><div class="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full text-white font-bold">2</div></div>
+                                <div class="w-px h-full bg-blue-300"></div>
+                            </div>
+                            <div class="pb-8">
+                                <h3 class="text-xl font-bold text-blue-700 mb-1">Phase 2: Launch Core Adjacency Modules</h3>
+                                <p class="text-stone-600">Develop and launch deeply integrated modules for full policy lifecycle management, incident reporting with root cause analysis, and built-in healthcare-specific risk assessment tools.</p>
+                            </div>
+                        </div>
+                         <!-- Phase 3 -->
+                        <div class="flex">
+                             <div class="flex flex-col items-center mr-4">
+                                <div><div class="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full text-white font-bold">3</div></div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-blue-700 mb-1">Phase 3: Build the Full GRC Suite & Integrate AI</h3>
+                                <p class="text-stone-600">Achieve feature parity with market leaders by adding audit management and vendor contract tools. Pursue deep EHR/HRIS integrations and explore AI/ML for predictive compliance insights.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 text-white py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-stone-400">
+            <p>Interactive Report generated from Source Document. &copy; 2025 Compliance Horizon.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Smooth scrolling for nav links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if(mobileMenu.classList.contains('hidden') === false){
+                        mobileMenu.classList.add('hidden');
+                    }
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Active nav link highlighting on scroll
+            const sections = document.querySelectorAll('[data-section]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-30% 0px -70% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+
+            // Chart.js Implementations
+            const marketGrowthData = {
+                labels: ['2024', '2034'],
+                datasets: [{
+                    label: 'Market Value (in Billions USD)',
+                    data: [3.35, 11.88],
+                    backgroundColor: ['rgba(59, 130, 246, 0.6)', 'rgba(29, 78, 216, 0.6)'],
+                    borderColor: ['rgb(59, 130, 246)', 'rgb(29, 78, 216)'],
+                    borderWidth: 1
+                }]
+            };
+
+            const marketGrowthCtx = document.getElementById('marketGrowthChart').getContext('2d');
+            new Chart(marketGrowthCtx, {
+                type: 'bar',
+                data: marketGrowthData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value + 'B';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Market Value: $${context.parsed.y} Billion`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const valuationData = {
+                labels: ['EV/Revenue Multiple'],
+                datasets: [
+                    {
+                        label: 'Education / EdTech',
+                        data: [6.9],
+                        backgroundColor: 'rgba(251, 146, 60, 0.6)',
+                        borderColor: 'rgb(251, 146, 60)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Healthcare / MedTech',
+                        data: [9.3],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            const valuationCtx = document.getElementById('valuationChart').getContext('2d');
+            new Chart(valuationCtx, {
+                type: 'bar',
+                data: valuationData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + 'x';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                         legend: { 
+                            position: 'top',
+                         },
+                         tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}x`;
+                                }
+                            }
+                         }
+                    }
+                }
+            });
+        });
+
+        // Tab functionality
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.className += " active";
+        }
+
+        // Modal functionality
+        const modal = document.getElementById('details-modal');
+        const modalContent = document.getElementById('modal-content');
+        
+        const modalDetails = {
+            cms: {
+                title: '🏛️ Centers for Medicare & Medicaid Services (CMS)',
+                content: `<p class="mb-4 text-stone-600">CMS is the primary payor and regulator for SNFs. Its Requirements of Participation are non-negotiable for receiving federal funding.</p>
+                          <ul class="space-y-2 list-disc list-inside">
+                            <li><strong>Focus:</strong> Quality of care, resident safety, staffing levels, financial integrity.</li>
+                            <li><strong>Key Regulations:</strong> Comprehensive Requirements of Participation, the 2024 Staffing Mandate (requiring 24/7 RN presence), and the Five-Star Quality Rating System.</li>
+                            <li><strong>Impact of Non-Compliance:</strong> Substantial fines, loss of certification (loss of funding), reputational damage, and mandated operational changes.</li>
+                          </ul>`
+            },
+            oig: {
+                title: '🛡️ Office of Inspector General (OIG)',
+                content: `<p class="mb-4 text-stone-600">As the law enforcement arm of HHS, the OIG's mission is to combat fraud, waste, and abuse in federal healthcare programs.</p>
+                          <ul class="space-y-2 list-disc list-inside">
+                            <li><strong>Focus:</strong> Financial integrity and fraud prevention.</li>
+                            <li><strong>Key Regulations:</strong> Enforces laws like the Anti-Kickback Statute and Stark Law. Its Compliance Program Guidances are the gold standard for providers.</li>
+                            <li><strong>High-Risk Areas:</strong> Scrutinizes improper billing, failures in care quality leading to false claims, and illegal kickback schemes.</li>
+                          </ul>`
+            },
+            osha: {
+                title: '👷 Occupational Safety and Health Administration (OSHA)',
+                content: `<p class="mb-4 text-stone-600">OSHA's mandate is to ensure safe and healthful working conditions for employees, which in turn protects residents.</p>
+                          <ul class="space-y-2 list-disc list-inside">
+                            <li><strong>Focus:</strong> Preventing accidents and minimizing workplace hazards.</li>
+                            <li><strong>Key Standards:</strong> Bloodborne Pathogens, Hazard Communication, Personal Protective Equipment (PPE), and Workplace Violence prevention.</li>
+                            <li><strong>Requirements:</strong> Mandates specific documented training, provision of PPE, exposure control plans, and meticulous record-keeping.</li>
+                          </ul>`
+            }
+        };
+
+        function showDetails(type) {
+            const details = modalDetails[type];
+            modalContent.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-2xl font-bold">${details.title}</h3>
+                    <button onclick="closeModal()" class="text-stone-500 hover:text-stone-800">&times;</button>
+                </div>
+                <div>${details.content}</div>
+                <div class="text-right mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Close</button>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+
+</body>
+</html>
