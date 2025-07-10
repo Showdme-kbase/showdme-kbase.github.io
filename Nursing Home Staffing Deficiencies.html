@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Nursing Home Staffing Deficiencies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutral & Teal -->
+    <!-- Application Structure Plan: The app uses a four-part narrative structure: 1) Executive Summary for immediate context, 2) An interactive "Deficiency Dashboard" to explore the core data (F-tag frequencies via a bar chart and specific cases via a filterable table), 3) A "Systemic Issues" section using clickable cards to explain the qualitative analysis, and 4) A "Recommendations" section for actionable solutions. This structure was chosen to guide the user from a high-level overview, through deep data exploration, to understanding the root causes and potential fixes, making a complex report digestible and engaging. -->
+    <!-- Visualization & Content Choices: 
+        - F-Tag Frequency (Report Table 2) -> Goal: Compare -> Viz: Horizontal Bar Chart -> Interaction: Hover tooltips -> Justification: Quickly visualizes the most common problem areas. -> Library: Chart.js/Canvas.
+        - Deficiency Details (Report Table 1) -> Goal: Organize/Explore -> Viz: Interactive HTML Table -> Interaction: Dropdown filtering by State & F-Tag -> Justification: Allows users to drill down into specific data points of interest, making the large dataset manageable. -> Method: Vanilla JS DOM Manipulation.
+        - Analysis/Context (Report Sections 1, 4) -> Goal: Inform -> Viz: Clickable Content Cards/Tabs -> Interaction: Click to reveal text -> Justification: Presents dense analytical text in digestible chunks, preventing user overload. -> Method: Vanilla JS.
+        - Recommendations (Report Section 6) -> Goal: Inform -> Viz: Two-column styled lists -> Interaction: Static -> Justification: Clearly and cleanly separates recommendations for different audiences. -> Method: HTML/Tailwind. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .tab-btn.active {
+            background-color: #0d9488;
+            color: white;
+            border-color: #0d9488;
+        }
+    </style>
+</head>
+<body class="text-slate-700 antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-slate-800">Nursing Home Staffing Deficiencies</h1>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#dashboard" class="text-sm font-medium text-slate-600 hover:text-teal-600">Dashboard</a>
+                    <a href="#analysis" class="text-sm font-medium text-slate-600 hover:text-teal-600">Analysis</a>
+                    <a href="#recommendations" class="text-sm font-medium text-slate-600 hover:text-teal-600">Recommendations</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="summary" class="mb-16">
+            <div class="max-w-4xl mx-auto text-center bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+                <h2 class="text-3xl font-bold text-teal-700 mb-4">The Critical Link Between Staffing and Quality of Care</h2>
+                <p class="text-lg text-slate-600 leading-relaxed">
+                    This analysis reveals that deficiencies concerning staff training and competency are prevalent across nursing homes in key states, significantly impacting resident safety and care. Inadequate training is often a direct cause of these issues, and even when not explicitly stated, enhanced training is the clear solution. This interactive report explores the most common deficiencies, the systemic challenges behind them, and actionable recommendations for improvement.
+                </p>
+            </div>
+        </section>
+
+        <section id="dashboard" class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-2">Deficiency Dashboard</h2>
+            <p class="text-center text-slate-500 max-w-3xl mx-auto mb-10">This section provides an interactive overview of the collected data. You can see the most frequently cited issues at a glance and use the filters to explore specific deficiencies found in nursing homes across the surveyed states. This allows for a deeper understanding of where the most critical problems lie.</p>
+
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 mb-12">
+                <h3 class="text-xl font-semibold text-slate-700 mb-4 text-center">Most Frequent Training & Competency Deficiencies</h3>
+                <div class="chart-container">
+                    <canvas id="ftagChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-xl font-semibold text-slate-700 mb-6 text-center">Deficiency Explorer</h3>
+                <div class="flex flex-col sm:flex-row gap-4 mb-6 justify-center">
+                    <div class="w-full sm:w-1/2 md:w-1/3">
+                        <label for="stateFilter" class="block text-sm font-medium text-slate-700 mb-1">Filter by State</label>
+                        <select id="stateFilter" class="w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                            <option value="All">All States</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-1/2 md:w-1/3">
+                        <label for="ftagFilter" class="block text-sm font-medium text-slate-700 mb-1">Filter by F-Tag</label>
+                        <select id="ftagFilter" class="w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                            <option value="All">All F-Tags</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">State</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Facility</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Deficiency Description</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">F-Tag</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deficiencyTableBody" class="bg-white divide-y divide-slate-200">
+                        </tbody>
+                    </table>
+                     <p id="noResults" class="text-center text-slate-500 py-8 hidden">No deficiencies found for the selected filters.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis" class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-2">Systemic Issues: A Deeper Analysis</h2>
+            <p class="text-center text-slate-500 max-w-3xl mx-auto mb-10">The data reveals several underlying systemic problems that contribute to these recurring deficiencies. These issues go beyond individual facilities and point to broader challenges in the long-term care sector. Click on each theme below to learn more about the root causes of training and competency failures.</p>
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-6" id="tab-buttons">
+                    <button data-tab="1" class="tab-btn active text-sm md:text-base font-medium py-2 px-4 border-2 border-slate-300 rounded-full transition-colors duration-300">Training as a Direct Cause</button>
+                    <button data-tab="2" class="tab-btn text-sm md:text-base font-medium py-2 px-4 border-2 border-slate-300 rounded-full transition-colors duration-300">Staffing vs. Competency</button>
+                    <button data-tab="3" class="tab-btn text-sm md:text-base font-medium py-2 px-4 border-2 border-slate-300 rounded-full transition-colors duration-300">Gaps in Oversight</button>
+                    <button data-tab="4" class="tab-btn text-sm md:text-base font-medium py-2 px-4 border-2 border-slate-300 rounded-full transition-colors duration-300">Data Transparency Challenges</button>
+                </div>
+                <div id="tab-content">
+                    <div data-content="1" class="tab-pane active bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h4 class="font-semibold text-lg text-teal-700 mb-2">Training as a Direct Cause</h4>
+                        <p class="text-slate-600">In many cases, the deficiency description explicitly cites a failure to provide required education. F-tags like F0730 (Failure to give regular training) and F0943 (Failure to educate on dementia/abuse) leave no ambiguity: the absence of training is the direct reason for the citation. This demonstrates a clear causal link between inadequate training programs and regulatory non-compliance, highlighting a fundamental breakdown in a facility's responsibility to prepare its staff.</p>
+                    </div>
+                    <div data-content="2" class="tab-pane hidden bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h4 class="font-semibold text-lg text-teal-700 mb-2">The Interplay of Staffing and Competency</h4>
+                        <p class="text-slate-600">Insufficient staffing (F0725) is a critical precursor to competency failures. When staff are overworked due to chronic shortages, they lack the time and capacity to attend training sessions or effectively apply new skills. This creates a vicious cycle where staffing issues prevent the very training needed to ensure competency, leading to a higher risk of care quality decline. Simply meeting quotas is not enough; staff must have the bandwidth to learn and grow.</p>
+                    </div>
+                    <div data-content="3" class="tab-pane hidden bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h4 class="font-semibold text-lg text-teal-700 mb-2">Gaps in Foundational Oversight</h4>
+                        <p class="text-slate-600">The recurrence of F0726 (Lack of competent staff) and F0838 (Failure to conduct a facility-wide assessment) points to systemic weaknesses in oversight and quality assurance. A proper assessment should proactively identify training needs before they escalate into deficiencies. The fact that an F0726 citation reached "Immediate Jeopardy" severity underscores the dire consequences of these oversight failures. The lack of documented corrective actions in some states further highlights a weakness in accountability.</p>
+                    </div>
+                    <div data-content="4" class="tab-pane hidden bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h4 class="font-semibold text-lg text-teal-700 mb-2">Challenges in Data Transparency</h4>
+                        <p class="text-slate-600">A significant limitation in the analysis was the frequent statement that detailed deficiency data was "unavailable in the document" for several states. While summary sites provide a high-level view, the granular data needed to understand root causes—such as specific F-tags, scope, severity, and corrective actions—is often not readily accessible to the public. This lack of transparency hinders effective oversight, research, and informed policy development.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-2">The Path Forward: Actionable Recommendations</h2>
+            <p class="text-center text-slate-500 max-w-3xl mx-auto mb-10">Addressing these systemic issues requires a concerted, multi-pronged effort from both nursing home facilities and regulatory bodies. The following recommendations outline key actions that can be taken to foster a culture of high-quality care, ensure resident safety, and build a more competent, well-supported workforce.</p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-semibold text-slate-700 mb-6 flex items-center gap-3">
+                        <span class="text-3xl">🏢</span> For Nursing Home Facilities
+                    </h3>
+                    <ul class="space-y-4 text-slate-600">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Implement Competency-Based Training:</strong> Move beyond compliance to a model of continuous, hands-on training that assesses the ability to apply skills in practice.</span>
+                        </li>
+                        <li class="flex items-start">
+                             <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Strengthen Performance Monitoring:</strong> Establish systematic processes to observe staff performance, identify gaps early, and provide targeted corrective feedback.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Conduct Comprehensive Assessments:</strong> Use facility-wide assessments (F0838) as a dynamic tool to rigorously evaluate staffing and identify skill requirements tailored to the resident population.</span>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Prioritize Staffing Adequacy:</strong> Actively address recruitment and retention to ensure staff have the capacity to engage in learning without being overwhelmed by workload.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-semibold text-slate-700 mb-6 flex items-center gap-3">
+                        <span class="text-3xl">🏛️</span> For Regulatory Bodies
+                    </h3>
+                    <ul class="space-y-4 text-slate-600">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Enhance Data Transparency:</strong> Improve public access to detailed deficiency reports, including F-tags, severity, and corrective action plans to foster accountability.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Strengthen Enforcement:</strong> Implement more stringent enforcement for recurring training-related F-tags and verify that corrective actions are effectively sustained.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Support Workforce Development:</strong> Collaborate with stakeholders to fund and develop training programs that address critical skill shortages, especially for CNAs and behavioral health.</span>
+                        </li>
+                         <li class="flex items-start">
+                             <span class="text-teal-500 font-bold mr-3 mt-1">&#10003;</span>
+                            <span><strong class="font-semibold text-slate-700">Focus on Management Training:</strong> Encourage or mandate comprehensive training for facility management in operational areas like emergency preparedness and quality assurance.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm">
+            <p>This interactive report was generated based on the "Analysis of Staff Competency and Training Deficiencies in Nursing Homes" report. Data is for informational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deficiencyData = [
+                { state: 'IN', facility: 'Hickory Creek At Rochester', description: "Failure to: Observe each nurse aide's job performance and give regular training.", ftag: 'F0730', severity: 'E' },
+                { state: 'NY', facility: 'Waters Edge At Port Jefferson', description: 'Failure to: Provide enough nursing staff every day to meet the needs of every resident.', ftag: 'F0725', severity: 'E' },
+                { state: 'PA', facility: 'Highland Hills Post Acute', description: "Failure to: Ensure that nurses and nurse aides have the appropriate competencies.", ftag: 'F0726', severity: 'J' },
+                { state: 'PA', facility: 'Highland Hills Post Acute', description: 'Failure to give their staff education on dementia care, and what abuse, neglect, and exploitation are.', ftag: 'F0943', severity: 'D' },
+                { state: 'PA', facility: 'Highland Hills Post Acute', description: "Failure to: Ensure that nurses and nurse aides have the appropriate competencies.", ftag: 'F0726', severity: 'E' },
+                { state: 'PA', facility: 'Burgh Care Center', description: "Failure to ensure that nurses and nurse aides have the appropriate competencies.", ftag: 'F0726', severity: 'E' },
+                { state: 'PA', facility: 'Burgh Care Center', description: "Failure to observe each nurse aide's job performance and give regular training.", ftag: 'F0730', severity: 'E' },
+                { state: 'PA', facility: 'Burgh Care Center', description: "Failure to conduct and document a facility-wide assessment to determine what resources are necessary.", ftag: 'F0838', severity: 'E' },
+                { state: 'IL', facility: '(Various, OIG Report)', description: 'Deficiencies in life safety and emergency preparedness due to lack of timely training for management.', ftag: 'Not specified', severity: 'Not specified' },
+                { state: 'VA', facility: '(Various, OIG Report)', description: 'Lack of RN competency and training affected patient care on a telemetry unit.', ftag: 'Not specified', severity: 'Not specified' }
+            ];
+
+            const ftagFrequencyData = {
+                'F0726': 3,
+                'F0730': 2,
+                'F0943': 1,
+                'F0725': 1,
+                'F0838': 1,
+                'Not specified': 2
+            };
+            
+            const ftagDescriptions = {
+                'F0726': 'Competent Nursing Staff',
+                'F0730': 'Nurse Aide Training/Review',
+                'F0943': 'Dementia/Abuse Edu.',
+                'F0725': 'Sufficient Nursing Staff',
+                'F0838': 'Facility-wide Assessment',
+                'Not specified': 'General Training (OIG)'
+            };
+
+            const stateFilter = document.getElementById('stateFilter');
+            const ftagFilter = document.getElementById('ftagFilter');
+            const tableBody = document.getElementById('deficiencyTableBody');
+            const noResults = document.getElementById('noResults');
+            
+            function populateFilters() {
+                const states = [...new Set(deficiencyData.map(d => d.state))];
+                const ftags = [...new Set(deficiencyData.map(d => d.ftag))];
+                
+                states.sort().forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    stateFilter.appendChild(option);
+                });
+
+                ftags.sort().forEach(ftag => {
+                    const option = document.createElement('option');
+                    option.value = ftag;
+                    option.textContent = ftag;
+                    ftagFilter.appendChild(option);
+                });
+            }
+
+            function renderTable(data) {
+                tableBody.innerHTML = '';
+                if (data.length === 0) {
+                    noResults.classList.remove('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                }
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    const severityClass = item.severity === 'J' ? 'bg-red-100 text-red-800 font-semibold' : '';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${item.state}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${item.facility}</td>
+                        <td class="px-6 py-4 whitespace-normal text-sm text-slate-500">${item.description}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${item.ftag}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${severityClass}">${item.severity}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function filterData() {
+                const selectedState = stateFilter.value;
+                const selectedFtag = ftagFilter.value;
+
+                const filteredData = deficiencyData.filter(item => {
+                    const stateMatch = selectedState === 'All' || item.state === selectedState;
+                    const ftagMatch = selectedFtag === 'All' || item.ftag === selectedFtag;
+                    return stateMatch && ftagMatch;
+                });
+                renderTable(filteredData);
+            }
+
+            populateFilters();
+            renderTable(deficiencyData);
+
+            stateFilter.addEventListener('change', filterData);
+            ftagFilter.addEventListener('change', filterData);
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const tabId = button.getAttribute('data-tab');
+                    tabPanes.forEach(pane => {
+                        if (pane.getAttribute('data-content') === tabId) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const ctx = document.getElementById('ftagChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ftagFrequencyData).map(key => `${key} (${ftagDescriptions[key]})`),
+                    datasets: [{
+                        label: 'Number of Occurrences',
+                        data: Object.values(ftagFrequencyData),
+                        backgroundColor: '#0d9488',
+                        borderColor: '#047857',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 4
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                            ticks: {
+                                color: '#475569',
+                                precision: 0
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                             ticks: {
+                                color: '#475569'
+                            }
+                        }
+                    }
+                }
+            });
+            
+             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

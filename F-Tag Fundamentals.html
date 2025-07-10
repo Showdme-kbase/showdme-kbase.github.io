@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive F-Tag Explorer for Long-Term Care</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A tabbed/single-page dashboard with sticky top navigation. The structure prioritizes user-driven exploration over the report's linear format. Key sections: 'Fundamentals' for learning, 'F-Tag Explorer' for interactive filtering, 'PoC Process' for visualizing workflows, and 'Strategy' for actionable insights. This task-oriented design helps users with different goals (learning, finding specific tags, understanding business application) find information quickly. -->
+    <!-- Visualization & Content Choices: 
+        - Scope/Severity: HTML Grid -> Inform -> Interactive Diagram -> Hover/Click -> Shows detailed info, easy to understand. Method: HTML/JS.
+        - F-Tag Data: HTML Cards -> Organize/Compare -> Interactive Filtering -> Buttons filter cards by category/type -> Allows users to drill down into the most relevant tags. Method: JS data array + filtering logic.
+        - Key "Pain Point" Tags: Chart.js Bar Chart -> Compare -> Visual hierarchy of top deficiencies -> Illustrates the most common problem areas for facilities at a glance. Method: Chart.js/Canvas.
+        - PoC Process: HTML/CSS Flowchart -> Change/Process -> Stepped Visual Guide -> Click to expand details on Elements 3 & 4 -> Clarifies a complex process and highlights the role of training. Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .nav-link.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+        }
+        .tag-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .tag-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-sky-700">F-Tag Explorer</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div id="nav-menu" class="ml-10 flex items-baseline space-x-4">
+                        <a href="#fundamentals" class="nav-link text-gray-700 hover:bg-sky-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Fundamentals</a>
+                        <a href="#explorer" class="nav-link text-gray-700 hover:bg-sky-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Explore F-Tags</a>
+                        <a href="#poc" class="nav-link text-gray-700 hover:bg-sky-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">PoC Process</a>
+                        <a href="#strategy" class="nav-link text-gray-700 hover:bg-sky-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Strategy</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="fundamentals" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">F-Tag Fundamentals</h2>
+                <p class="mt-4 text-lg leading-8 text-slate-600">Understanding the building blocks of long-term care compliance.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="prose max-w-none text-slate-700">
+                    <h3>What is an F-Tag?</h3>
+                    <p>An F-Tag (federal tag) is a numerical code that identifies a specific federal regulation for long-term care facilities under <strong>42 CFR Part 483, Subpart B</strong>. Surveyors use these tags to document deficiencies on Form CMS-2567 when a facility fails to meet the minimum health and safety standards, known as the Requirements of Participation (RoPs).</p>
+                    <p>Think of F-Tags as a diagnostic tool. A pattern of citations reveals a facility's systemic weaknesses, creating a clear roadmap for corrective action, including targeted training and competency assessments.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-center mb-4 text-slate-900">Interactive Scope & Severity Matrix</h3>
+                     <p class="text-center text-sm text-slate-500 mb-2">Hover over a level to see its meaning.</p>
+                    <div class="grid grid-cols-4 border border-slate-300 rounded-lg">
+                        <div class="col-span-1 p-2 text-center font-semibold bg-slate-100 border-r border-b border-slate-300">Severity</div>
+                        <div class="col-span-3 p-2 text-center font-semibold bg-slate-100 border-b border-slate-300">Scope</div>
+                        
+                        <div></div>
+                        <div class="p-2 text-center font-medium bg-slate-50 border-r border-slate-300">Isolated</div>
+                        <div class="p-2 text-center font-medium bg-slate-50 border-r border-slate-300">Pattern</div>
+                        <div class="p-2 text-center font-medium bg-slate-50">Widespread</div>
+
+                        <div class="p-2 font-medium bg-slate-50 border-r border-t border-slate-300 text-center flex items-center justify-center">Level 4: IJ</div>
+                        <div class="grid grid-cols-3 col-span-3 border-t border-slate-300">
+                            <button data-level="J" class="severity-box p-4 bg-red-200 hover:bg-red-300 border-r border-slate-300 font-bold">J</button>
+                            <button data-level="K" class="severity-box p-4 bg-red-200 hover:bg-red-300 border-r border-slate-300 font-bold">K</button>
+                            <button data-level="L" class="severity-box p-4 bg-red-200 hover:bg-red-300 font-bold">L</button>
+                        </div>
+
+                        <div class="p-2 font-medium bg-slate-50 border-r border-t border-slate-300 text-center flex items-center justify-center">Level 3: Actual Harm</div>
+                        <div class="grid grid-cols-3 col-span-3 border-t border-slate-300">
+                            <button data-level="G" class="severity-box p-4 bg-orange-200 hover:bg-orange-300 border-r border-slate-300 font-bold">G</button>
+                            <button data-level="H" class="severity-box p-4 bg-orange-200 hover:bg-orange-300 border-r border-slate-300 font-bold">H</button>
+                            <button data-level="I" class="severity-box p-4 bg-orange-200 hover:bg-orange-300 font-bold">I</button>
+                        </div>
+                        
+                        <div class="p-2 font-medium bg-slate-50 border-r border-t border-slate-300 text-center flex items-center justify-center">Level 2: Potential Harm</div>
+                        <div class="grid grid-cols-3 col-span-3 border-t border-slate-300">
+                            <button data-level="D" class="severity-box p-4 bg-yellow-200 hover:bg-yellow-300 border-r border-slate-300 font-bold">D</button>
+                            <button data-level="E" class="severity-box p-4 bg-yellow-200 hover:bg-yellow-300 border-r border-slate-300 font-bold">E</button>
+                            <button data-level="F" class="severity-box p-4 bg-yellow-200 hover:bg-yellow-300 font-bold">F</button>
+                        </div>
+
+                        <div class="p-2 font-medium bg-slate-50 border-r border-t border-slate-300 text-center flex items-center justify-center">Level 1: Minimal Harm</div>
+                        <div class="grid grid-cols-3 col-span-3 border-t border-slate-300">
+                             <button data-level="A" class="severity-box p-4 bg-green-200 hover:bg-green-300 border-r border-slate-300 font-bold rounded-bl-lg">A</button>
+                            <button data-level="B" class="severity-box p-4 bg-green-200 hover:bg-green-300 border-r border-slate-300 font-bold">B</button>
+                            <button data-level="C" class="severity-box p-4 bg-green-200 hover:bg-green-300 font-bold rounded-br-lg">C</button>
+                        </div>
+                    </div>
+                    <div id="severity-info" class="mt-4 p-4 bg-white rounded-lg shadow min-h-[100px] flex items-center justify-center">
+                        <p class="text-slate-600 text-center">Hover over a letter to see the scope & severity description.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-slate-200">
+
+        <section id="explorer" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">F-Tag Explorer</h2>
+                <p class="mt-4 text-lg leading-8 text-slate-600">Filter and explore F-Tags related to staff skills, assessments, and training.</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow mb-8">
+                <div class="flex flex-wrap items-center gap-4">
+                    <span class="font-semibold">Filter by:</span>
+                    <div id="filter-buttons" class="flex flex-wrap gap-2">
+                        <button data-filter="all" class="filter-btn bg-sky-600 text-white px-4 py-2 rounded-md text-sm">All</button>
+                        <button data-filter="explicit" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm">Explicit Mandates</button>
+                        <button data-filter="implicit" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm">Implicit Requirements</button>
+                        <button data-filter="pain-points" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm">Top Pain Points</button>
+                    </div>
+                     <div class="ml-auto">
+                        <input type="text" id="search-input" placeholder="Search by number or title..." class="w-full md:w-64 px-4 py-2 border border-slate-300 rounded-md focus:ring-sky-500 focus:border-sky-500">
+                    </div>
+                </div>
+            </div>
+
+            <div id="ftag-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+             <div id="no-results" class="hidden text-center py-12">
+                <p class="text-xl text-slate-500">No F-Tags match your search.</p>
+            </div>
+        </section>
+        
+        <hr class="my-12 border-slate-200">
+
+        <section id="poc" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">The Plan of Correction (PoC) Process</h2>
+                <p class="mt-4 text-lg leading-8 text-slate-600">From deficiency to correction: How training becomes a required solution.</p>
+            </div>
+             <p class="text-center max-w-3xl mx-auto mb-10 text-slate-700">When a facility is cited, they have 10 days to submit a Plan of Correction (PoC). This plan must address five key elements for each deficiency. For any issue rooted in staff performance, remedial training is a non-negotiable part of a successful PoC.</p>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="space-y-8">
+                    <div class="poc-step flex items-start gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 text-xl">1</div>
+                        <div>
+                            <h4 class="font-bold text-lg">Correct Affected Residents</h4>
+                            <p class="text-slate-600">Detail specific actions taken to fix the issue for residents identified in the survey.</p>
+                        </div>
+                    </div>
+                    <div class="poc-step flex items-start gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 text-xl">2</div>
+                        <div>
+                            <h4 class="font-bold text-lg">Identify Others at Risk</h4>
+                            <p class="text-slate-600">Describe how the facility will find other residents who could be affected by the same problem.</p>
+                        </div>
+                    </div>
+                    <div class="poc-step flex items-start gap-4 p-4 border-2 border-sky-500 rounded-lg bg-sky-50">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div>
+                            <h4 class="font-bold text-lg text-sky-800">Implement Systemic Changes <span class="text-sm font-normal">(Training Opportunity)</span></h4>
+                            <p class="text-sky-700">Outline measures to prevent recurrence. This is where <strong class="font-semibold">revising policies and providing staff training/education</strong> becomes a required systemic change to address the root cause.</p>
+                        </div>
+                    </div>
+                    <div class="poc-step flex items-start gap-4 p-4 border-2 border-sky-500 rounded-lg bg-sky-50">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div>
+                            <h4 class="font-bold text-lg text-sky-800">Monitor & Assure Quality <span class="text-sm font-normal">(Assessment Opportunity)</span></h4>
+                            <p class="text-sky-700">Describe how the facility will monitor its fixes to ensure they are effective and sustained. This requires <strong class="font-semibold">competency validation, observational audits, and post-tests</strong> to prove training worked.</p>
+                        </div>
+                    </div>
+                    <div class="poc-step flex items-start gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 text-xl">5</div>
+                        <div>
+                            <h4 class="font-bold text-lg">Set Completion Dates</h4>
+                            <p class="text-slate-600">Provide specific dates for when each corrective action will be complete.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-slate-200">
+        
+        <section id="strategy" class="scroll-mt-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Strategic Opportunities</h2>
+                <p class="mt-4 text-lg leading-8 text-slate-600">Turning compliance challenges into business solutions.</p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                     <h3 class="font-semibold text-xl mb-4 text-slate-900">Key Pain Points for Facilities</h3>
+                     <p class="mb-6 text-slate-600">While explicit training tags (like the F940-series) provide the mandate, deficiencies with *implicit* competency requirements cause the most frequent and severe problems for facilities. Training solutions should focus on these high-impact areas.</p>
+                    <div class="chart-container">
+                        <canvas id="painPointsChart"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold text-xl mb-4 text-slate-900">Solution-Based Training</h3>
+                     <p class="mb-6 text-slate-600">The most effective strategy is to package training and competency assessments as solutions to specific F-Tag problems. This shifts the value proposition from selling a course to solving a critical business need.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-white rounded-lg shadow">
+                            <h4 class="font-bold">Fall Prevention Program</h4>
+                            <p class="text-sm text-slate-500">Addresses: <span class="font-semibold">F689, F726, F947</span></p>
+                        </div>
+                         <div class="p-4 bg-white rounded-lg shadow">
+                            <h4 class="font-bold">Infection Control Mandate</h4>
+                            <p class="text-sm text-slate-500">Addresses: <span class="font-semibold">F880, F945, F882</span></p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg shadow">
+                            <h4 class="font-bold">Dignity & Abuse Prevention</h4>
+                            <p class="text-sm text-slate-500">Addresses: <span class="font-semibold">F600, F943, F699</span></p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg shadow">
+                            <h4 class="font-bold">Clinical Excellence Package</h4>
+                            <p class="text-sm text-slate-500">Addresses: <span class="font-semibold">F684, F656, F726</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <p>Interactive F-Tag Explorer | Information derived from Strategic Analysis Report.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const fTagsData = [
+        { id: "F726", title: "Competent Nursing Staff", category: 'explicit', painPoint: true, summary: "Facility must ensure nursing staff have the appropriate competencies and skill sets, proven through assessment and evaluation, not just training attendance." },
+        { id: "F838", title: "Facility Assessment", category: 'implicit', painPoint: false, summary: "Facility must conduct a comprehensive assessment to determine resident needs and the resources (including staff competencies and training) required to meet them." },
+        { id: "F940", title: "Training Requirements - General", category: 'explicit', painPoint: false, summary: "Facility must develop, implement, and maintain an effective training program for all staff, based on the Facility Assessment." },
+        { id: "F941", title: "Communication Training", category: 'explicit', painPoint: false, summary: "Requires specific training for direct care staff on effective communication methods and techniques to ensure they can interact appropriately with residents." },
+        { id: "F942", title: "Resident’s Rights Training", category: 'explicit', painPoint: false, summary: "Mandates that all staff be trained on resident rights and the facility's responsibilities to protect and promote those rights." },
+        { id: "F943", title: "Abuse, Neglect, and Exploitation Training", category: 'explicit', painPoint: false, summary: "Mandates specific training on identifying, preventing, and reporting abuse, including dementia management and abuse prevention." },
+        { id: "F945", title: "Infection Control Training", category: 'explicit', painPoint: false, summary: "Mandates training on the facility's Infection Prevention and Control Program (IPCP)." },
+        { id: "F947", title: "Required In-Service Training for Nurse Aides", category: 'explicit', painPoint: false, summary: "Mandates a minimum of 12 hours of annual in-service training for NAs, based on performance reviews and the Facility Assessment." },
+        { id: "F949", title: "Behavioral Health Training", category: 'explicit', painPoint: false, summary: "Mandates training on caring for residents with mental/psychosocial disorders and using non-pharmacological interventions." },
+        { id: "F689", title: "Free of Accident Hazards/Supervision/Devices", category: 'implicit', painPoint: true, summary: "Facility must provide an environment free of accident hazards and provide adequate supervision and assistive devices. Deficiencies often stem from a lack of staff skill in risk assessment and safety protocols." },
+        { id: "F684", title: "Quality of Care", category: 'implicit', painPoint: true, summary: "Facility must provide care to help residents attain their highest practicable well-being. Deficiencies often result from failures in clinical assessment and intervention, pointing to competency gaps." },
+        { id: "F880", title: "Infection Prevention & Control", category: 'implicit', painPoint: true, summary: "Facility must establish and maintain an IPCP. Deficiencies are almost always due to breakdowns in staff practice (e.g., hand hygiene, PPE use)." },
+        { id: "F656", title: "Develop/Implement Comprehensive Care Plan", category: 'implicit', painPoint: true, summary: "Facility must develop and implement a person-centered care plan. Deficiencies indicate a lack of competency in assessment, planning, or communicating the plan to front-line staff." },
+        { id: "F677", title: "ADL Care Provided for Dependent Residents", category: 'implicit', painPoint: true, summary: "Facility must provide necessary services for dependent residents' nutrition, grooming, and hygiene. Deficiencies point to a fundamental lack of skill or attentiveness in providing basic care." },
+        { id: "F699", title: "Trauma Informed Care", category: 'implicit', painPoint: false, summary: "Facility must ensure staff are trained on and implement trauma-informed approaches to care, recognizing and responding to the effects of all types of trauma." }
+    ];
+
+    const severityMap = {
+        A: { desc: 'Level 1: No Actual Harm with Potential for Minimal Harm, Isolated.', color: 'bg-green-100' },
+        B: { desc: 'Level 1: No Actual Harm with Potential for Minimal Harm, Pattern.', color: 'bg-green-100' },
+        C: { desc: 'Level 1: No Actual Harm with Potential for Minimal Harm, Widespread.', color: 'bg-green-100' },
+        D: { desc: 'Level 2: No Actual Harm with Potential for More Than Minimal Harm, Isolated.', color: 'bg-yellow-100' },
+        E: { desc: 'Level 2: No Actual Harm with Potential for More Than Minimal Harm, Pattern.', color: 'bg-yellow-100' },
+        F: { desc: 'Level 2: No Actual Harm with Potential for More Than Minimal Harm, Widespread. Can be classified as Substandard Quality of Care (SQC).', color: 'bg-yellow-100' },
+        G: { desc: 'Level 3: Actual Harm that is not Immediate Jeopardy, Isolated.', color: 'bg-orange-100' },
+        H: { desc: 'Level 3: Actual Harm that is not Immediate Jeopardy, Pattern. Can be classified as SQC.', color: 'bg-orange-100' },
+        I: { desc: 'Level 3: Actual Harm that is not Immediate Jeopardy, Widespread. Can be classified as SQC.', color: 'bg-orange-100' },
+        J: { desc: 'Level 4: Immediate Jeopardy (IJ). Harm has occurred or is likely. Isolated. Also classified as SQC.', color: 'bg-red-100' },
+        K: { desc: 'Level 4: Immediate Jeopardy (IJ). Harm has occurred or is likely. Pattern. Also classified as SQC.', color: 'bg-red-100' },
+        L: { desc: 'Level 4: Immediate Jeopardy (IJ). Harm has occurred or is likely. Widespread. Also classified as SQC.', color: 'bg-red-100' }
+    };
+
+    const ftagGrid = document.getElementById('ftag-grid');
+    const filterButtons = document.getElementById('filter-buttons');
+    const searchInput = document.getElementById('search-input');
+    const noResultsDiv = document.getElementById('no-results');
+
+    function renderTags(filter = 'all', searchTerm = '') {
+        ftagGrid.innerHTML = '';
+        const lowercasedSearchTerm = searchTerm.toLowerCase();
+
+        const filteredTags = fTagsData.filter(tag => {
+            const matchesFilter = filter === 'all' || tag.category === filter || (filter === 'pain-points' && tag.painPoint);
+            const matchesSearch = tag.id.toLowerCase().includes(lowercasedSearchTerm) || tag.title.toLowerCase().includes(lowercasedSearchTerm);
+            return matchesFilter && matchesSearch;
+        });
+
+        if (filteredTags.length === 0) {
+            noResultsDiv.classList.remove('hidden');
+        } else {
+            noResultsDiv.classList.add('hidden');
+        }
+
+        filteredTags.forEach(tag => {
+            const card = document.createElement('div');
+            card.className = 'tag-card bg-white p-6 rounded-lg shadow-md border-l-4';
+            card.setAttribute('data-category', tag.category);
+            card.setAttribute('data-painpoint', tag.painPoint);
+            
+            let borderColor = tag.category === 'explicit' ? 'border-sky-500' : 'border-amber-500';
+            card.classList.add(borderColor);
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-slate-800">${tag.id}</h3>
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full ${tag.category === 'explicit' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'}">
+                        ${tag.category === 'explicit' ? 'Explicit Mandate' : 'Implicit Requirement'}
+                    </span>
+                </div>
+                <h4 class="font-semibold mt-1 text-slate-900">${tag.title}</h4>
+                <p class="mt-2 text-sm text-slate-600">${tag.summary}</p>
+            `;
+            ftagGrid.appendChild(card);
+        });
+    }
+    
+    filterButtons.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('bg-slate-200', 'text-slate-700');
+            });
+            e.target.classList.add('bg-sky-600', 'text-white');
+            e.target.classList.remove('bg-slate-200', 'text-slate-700');
+            
+            const filter = e.target.dataset.filter;
+            renderTags(filter, searchInput.value);
+        }
+    });
+
+    searchInput.addEventListener('input', () => {
+        const activeFilter = document.querySelector('.filter-btn.bg-sky-600').dataset.filter;
+        renderTags(activeFilter, searchInput.value);
+    });
+
+    const severityBoxes = document.querySelectorAll('.severity-box');
+    const severityInfo = document.getElementById('severity-info');
+    severityBoxes.forEach(box => {
+        box.addEventListener('mouseover', () => {
+            const level = box.dataset.level;
+            const info = severityMap[level];
+            severityInfo.innerHTML = `<p class="font-semibold text-center">${info.desc}</p>`;
+            severityInfo.className = `mt-4 p-4 rounded-lg shadow min-h-[100px] flex items-center justify-center transition-colors duration-300 ${info.color}`;
+        });
+    });
+
+    const painPointsChartCtx = document.getElementById('painPointsChart').getContext('2d');
+    new Chart(painPointsChartCtx, {
+        type: 'bar',
+        data: {
+            labels: ['F880 Infection Control', 'F689 Accidents', 'F684 Quality of Care', 'F656 Care Plans', 'F677 ADL Care'],
+            datasets: [{
+                label: 'Relative Impact / Pain Level',
+                data: [95, 92, 88, 85, 80],
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.6)',
+                    'rgba(249, 115, 22, 0.6)',
+                    'rgba(245, 158, 11, 0.6)',
+                    'rgba(163, 230, 53, 0.6)',
+                    'rgba(59, 130, 246, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(249, 115, 22, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(163, 230, 53, 1)',
+                    'rgba(59, 130, 246, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' This F-Tag represents a major compliance challenge due to frequent citations and high potential for resident harm.';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { display: false },
+                    grid: { display: false }
+                },
+                 y: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "-30% 0px -70% 0px" });
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    renderTags();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Analysis of Nursing Home Deficiencies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard, diverging from the linear report format for better usability. The structure is: 1) A header with a summary. 2) A "National Overview" section with a key findings chart and interactive cards for the report's main themes. This synthesizes the executive summary and thematic analysis into a more engaging format. 3) An interactive "State-by-State Deep Dive" section, using tabs for state selection to dynamically display facility data. This replaces the long, scrolling text sections and allows users to directly access the information they need. 4) An "Understanding the Regulations" section with clickable F-Tags to provide context on-demand. 5) A final "Advocate's Guide" section presenting the actionable questions in a clear, usable format. This top-down structure (from national overview to specific details) provides a logical, user-driven exploration path, making complex information digestible and accessible. -->
+    <!-- Visualization & Content Choices: 1. National Findings (Doughnut Chart): Goal: Inform/Compare. Method: Chart.js Doughnut. Interaction: Hover for details. Justification: Visually represents the core finding of Explicit vs. Implicit failures for an immediate high-level takeaway. 2. Thematic Analysis (Interactive Cards): Goal: Inform/Organize. Method: HTML/CSS/JS clickable cards. Interaction: Click to reveal details in a modal. Justification: Converts dense paragraphs into an engaging, interactive exploration of key concepts. 3. State/Facility Data (Dynamic Tabs/Accordions): Goal: Organize/Compare. Method: JS-driven content switching and HTML accordions. Interaction: Click tabs to switch states, click facilities to expand details. Justification: Manages a large amount of hierarchical data cleanly, preventing information overload and allowing focused user queries. 4. Regulatory F-Tags (Clickable List): Goal: Inform. Method: HTML/JS modal. Interaction: Click tag to see definition. Justification: Provides context-sensitive help ("just-in-time" information) without cluttering the main interface. All choices use JS for dynamic updates, avoiding static pages and enhancing user engagement. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfdfd;
+            color: #1f2937;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+        .facility-accordion-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .facility-accordion-header:hover {
+            background-color: #f0f4ff;
+        }
+        .facility-accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .facility-accordion-content.open {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <main class="container mx-auto p-4 sm:p-6 md:p-8">
+
+        <header class="text-center mb-12 border-b pb-8 border-gray-200">
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-2">An Interactive Analysis of Nursing Home Deficiencies</h1>
+            <p class="text-lg md:text-xl text-gray-500 max-w-4xl mx-auto">Exploring the critical link between staff competency, training failures, and resident safety across seven U.S. states.</p>
+        </header>
+
+        <section id="overview" class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8">National Overview & Key Findings</h2>
+            <div class="text-gray-600 text-center max-w-3xl mx-auto mb-10">
+                <p>This section provides a high-level view of the investigation's core conclusions. The analysis revealed that deficiencies can be categorized as either 'Explicit'—where a facility was directly cited for failures in training or competency—or 'Implicit,' where repeated, serious harm suggests an underlying, systemic competency problem even without a direct citation. Explore the chart and thematic cards below to understand these critical patterns.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                <div class="w-full md:w-1/2 lg:w-2/5">
+                    <div class="chart-container">
+                        <canvas id="findingsChart"></canvas>
+                    </div>
+                    <p class="text-center text-sm text-gray-500 mt-4">Distribution of Finding Types in Investigated Facilities</p>
+                </div>
+                <div class="w-full md:w-1/2 lg:w-3/5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="theme-card p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-theme="theme1">
+                            <h3 class="font-semibold text-lg text-blue-600 mb-2">Predictive Power</h3>
+                            <p class="text-sm text-gray-600">Minor citations for training failures often predict future, serious resident harm.</p>
+                        </div>
+                        <div class="theme-card p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-theme="theme2">
+                            <h3 class="font-semibold text-lg text-blue-600 mb-2">The "No Citation" Fallacy</h3>
+                            <p class="text-sm text-gray-600">A lack of a specific training citation doesn't mean a facility's training is adequate.</p>
+                        </div>
+                        <div class="theme-card p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-theme="theme3">
+                            <h3 class="font-semibold text-lg text-blue-600 mb-2">Turnover & Competency</h3>
+                            <p class="text-sm text-gray-600">High staff turnover and low competency create a self-perpetuating cycle of crisis.</p>
+                        </div>
+                        <div class="theme-card p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-theme="theme4">
+                            <h3 class="font-semibold text-lg text-blue-600 mb-2">Administrative Culpability</h3>
+                            <p class="text-sm text-gray-600">Responsibility for a competent workforce ultimately rests with facility administration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="deep-dive" class="mb-16 bg-gray-50 p-6 rounded-lg">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-4">State-by-State Deep Dive</h2>
+            <div class="text-gray-600 text-center max-w-3xl mx-auto mb-8">
+                <p>Select a state below to explore detailed findings from the investigation. This section allows you to view state-level statistics and examine the specific deficiencies found at key facilities. Click on a facility's name to expand its full report, including the types of failures identified and an analysis of the findings.</p>
+            </div>
+            <div id="state-tabs" class="flex flex-wrap justify-center gap-2 mb-8"></div>
+            <div id="state-content-container"></div>
+        </section>
+        
+        <section id="regulations" class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-4">Understanding the Regulations</h2>
+            <div class="text-gray-600 text-center max-w-3xl mx-auto mb-8">
+                <p>Nursing home compliance is measured using a system of "F-Tags," each corresponding to a specific federal regulation. Understanding these tags is key to interpreting inspection reports. Click on any F-Tag below to see a brief explanation of what it covers and why it's important for resident safety.</p>
+            </div>
+            <div id="ftag-container" class="flex flex-wrap justify-center gap-3"></div>
+        </section>
+
+        <section id="advocacy" class="bg-blue-50 p-6 sm:p-8 rounded-lg">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-4">A Guide for Facility Evaluation</h2>
+             <div class="text-gray-600 text-center max-w-3xl mx-auto mb-8">
+                <p>This analysis empowers consumers and advocates to ask informed questions when evaluating a nursing home. Use the guide below, which presents key questions derived from the report's findings, to look beyond marketing materials and assess a facility's true commitment to resident safety and staff competency.</p>
+            </div>
+            <div id="advocacy-questions" class="space-y-4 max-w-4xl mx-auto"></div>
+        </section>
+
+    </main>
+    
+    <div id="modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-lg transform scale-95">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800"></h3>
+                <button id="modal-close" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <p id="modal-body" class="text-gray-600"></p>
+        </div>
+    </div>
+
+
+    <script>
+        const appData = {
+            states: [
+                {
+                    id: 'FL',
+                    name: 'Florida',
+                    stats: { homes: 695, seriousDeficiencies: 186, infectionDeficiencies: 440 },
+                    facilities: [
+                        { name: 'Charlotte Bay Rehab And Care Center', city: 'Port Charlotte', type: 'Explicit', date: 'Mar 22, 2025', analysis: 'This facility provides a clear example of the link between competency failures and resident harm. It was explicitly cited for F0726 (Failure to ensure nurse/aide competencies) alongside serious deficiencies for abuse (F0600) and ineffective administration (F0835), illustrating a complete systemic breakdown.' },
+                        { name: 'Aspire At Colonial Lakes', city: 'Winter Garden', type: 'Explicit', date: 'Jan 16, 2025', analysis: 'Cited for F0726 (Failure to ensure nurse/aide competencies) in conjunction with a failure to provide enough food and fluids. This demonstrates how a lack of fundamental staff skills can manifest in the failure to provide even the most basic elements of care.' }
+                    ]
+                },
+                {
+                    id: 'IL',
+                    name: 'Illinois',
+                    facilities: [
+                        { name: 'River View Rehab Center', city: 'Elgin', type: 'Implicit', date: 'Mar 31, 2025', analysis: 'While not explicitly cited for training failures, repeated citations for F0600 (Failure to protect from abuse) and F0607 (Failure to develop abuse prevention policies) across 2024-2025 are powerful circumstantial evidence of a preceding failure in the training and supervision process.' },
+                        { name: 'Alden North Shore Rehab & Hcc', city: 'Skokie', type: 'Implicit', date: 'Mar 27, 2025', analysis: 'Mirrors the pattern at River View, with citations for both F0600 (Failure to protect from abuse) and F0607 (Failure to develop/implement abuse prevention policies). The pairing demonstrates not only that abuse occurred, but that the facility lacked the basic procedural framework—created through training—to prevent it.' }
+                    ]
+                },
+                {
+                    id: 'IN',
+                    name: 'Indiana',
+                    facilities: [
+                        { name: 'Paoli Health And Living Community', city: 'Paoli', type: 'Explicit', date: 'Jan 24, 2025', analysis: 'A clear timeline of failure. The facility was cited in Feb 2024 for F0728 (Failure to ensure aides are trained/certified). This uncorrected failure predictably led to serious deficiencies a year later for abuse (F0600) and accident prevention (F0689).' },
+                        { name: 'Tranquility Nursing And Rehab', city: 'Indianapolis', type: 'Implicit', date: 'Dec 26, 2024', analysis: 'Cited for failure to provide enough nursing staff, which is inextricably linked to competency. An understaffed facility cannot provide necessary supervision or on-the-job training. This was paired with a failure in providing high-skill respiratory care.' }
+                    ]
+                },
+                {
+                    id: 'NY',
+                    name: 'New York',
+                    facilities: [
+                        { name: 'The Grand Rehabilitation And Nrsg At Guilderland', city: 'Altamont', type: 'Explicit', date: 'Mar 7, 2025', analysis: 'Demonstrates a chronic, uncorrected problem. The facility was cited for both F0726 (competency failure) and F0725 (staffing failure), with a history of staffing citations. An extremely high nurse turnover rate of 52.9% illuminates a system unable to retain or adequately train staff.' },
+                        { name: 'St Luke Residential Health Care Facility Inc', city: 'Oswego', type: 'Implicit', date: 'Mar 14, 2025', analysis: 'While no explicit training citation was found, the facility was cited for insufficient staffing (F0725), accident prevention failures (F0689), and ineffective administration (F0835). A "going concern" financial flag suggests administrative decisions to cut staffing and training may be a root cause.' }
+                    ]
+                },
+                {
+                    id: 'NJ',
+                    name: 'New Jersey',
+                    facilities: [
+                        { name: 'Careone At New Milford', city: 'New Milford', type: 'Explicit', date: 'Mar 6, 2025', analysis: 'A clear, multi-year history of documented training failures. The facility was cited in Jan 2023 for both F0730 (failure to give regular training) and F0726 (competency failure). A serious deficiency in 2025 for accident prevention is a direct, predictable outcome.' },
+                        { name: 'Fountainview Care Center', city: 'Lakewood', type: 'Implicit', date: 'Mar 6, 2025', analysis: 'Cited for F0600 (abuse) and F0610 (failure to respond to violations). The F0610 citation is key, as it shows the internal system for investigation—which relies entirely on trained staff—failed, representing a profound breakdown in procedural safeguards.' }
+                    ]
+                },
+                {
+                    id: 'PA',
+                    name: 'Pennsylvania',
+                    facilities: [
+                        { name: 'Highland Hills Post Acute', city: 'Pittsburgh', type: 'Explicit', date: 'Mar 6, 2025', analysis: 'A prime example of escalating failure. Cited in Jan 2024 for F0726 (competency) and F0943 (failure to educate on abuse). By Mar 2025, the competency failure (F0726) was cited again, but this time with "Immediate Jeopardy" severity, the highest risk level.' }
+                    ]
+                },
+                {
+                    id: 'VA',
+                    name: 'Virginia',
+                    facilities: [
+                        { name: 'Alleghany Health And Rehab', city: 'Clifton Forge', type: 'Explicit', date: 'Jan 28, 2025', analysis: 'A complaint report replete with explicit training failures, including F0730 (failure to give regular training) and F0944 (failure to train on QAPI). These directly explain the serious deficiencies for abuse (F0600), failure to prevent abuse (F0607), and failure to provide mental health services (F0742).' }
+                    ]
+                }
+            ],
+            themes: {
+                theme1: { title: 'The Predictive Power of Process Failures', body: 'A crucial pattern observed across multiple states is that "minor," non-harm-level deficiencies related to training and administration are powerful leading indicators of future, serious resident harm. In cases like Paoli Health (IN) and Careone At New Milford (NJ), inspection reports documented explicit training failures in one year, which were followed by serious, harm-level deficiencies for abuse and accident prevention in the subsequent year. This demonstrates that regulatory failures in process-oriented standards are not trivial administrative lapses; they are warnings of a system\'s decay that, if left uncorrected, will predictably lead to dangerous outcomes for residents.' },
+                theme2: { title: 'The Fallacy of the "No Training Cited" Report', body: 'Facilities like River View Rehab in Illinois exemplify how a facility can have a catastrophic training problem without a single explicit "training" citation. The sheer volume and repetition of abuse-related deficiencies is, in itself, evidence of a systemic competency failure. This highlights the need to perform an "implicit analysis" when evaluating a facility. Patterns of repeated falls, multiple abuse allegations, or widespread infections should be viewed as de facto evidence of an inadequately trained or supervised workforce, regardless of whether a specific training tag was cited.' },
+                theme3: { title: 'The Vicious Cycle of High Turnover and Low Competency', body: 'The relationship between high staff turnover and competency deficiencies creates a self-perpetuating cycle of crisis. The Grand at Guilderland in New York, with its 52.9% nurse turnover rate alongside repeated citations for both staffing and competency, serves as a stark case study. High turnover strains training resources, leading to poorly prepared staff. This substandard care contributes to a stressful work environment and poor outcomes, which in turn drives more staff to leave. The combination of high turnover and competency deficiencies is one of the most significant red flags.' },
+                theme4: { title: 'Administrative Culpability as the Root Cause', body: 'Ultimately, the responsibility for ensuring a competent workforce lies with facility administration. In facilities like Charlotte Bay (FL) and St Luke (NY), administrative deficiencies were cited in direct conjunction with care failures. Administrative decisions to cut staffing and training, often seen as controllable costs, have a direct and detrimental impact on the quality and safety of resident care. Financial distress can be a motivating factor for such decisions.' }
+            },
+            fTags: [
+                { id: 'F0726', title: 'Competency of Nurses/Aides', desc: 'Requires facilities to ensure nursing staff have the specific competencies and skills to care for residents\' needs in a way that maximizes well-being. A citation is a direct indictment of a facility\'s failure to ensure clinical staff is qualified.' },
+                { id: 'F0730', title: 'Nurse Aide Training', desc: 'Mandates regular in-service training and direct observation of nurse aide job performance. A failure here indicates a breakdown in ongoing education and quality control for frontline caregivers.' },
+                { id: 'F0943', title: 'Dementia & Abuse Education', desc: 'Requires specific training on dementia care and the prevention, recognition, and reporting of abuse, neglect, and exploitation. A deficiency is a significant red flag.' },
+                { id: 'F0944', title: 'QAPI Training', desc: 'Requires facilities to train all staff on their internal Quality Assurance and Performance Improvement (QAPI) program, the system for identifying and correcting quality issues. Failure points to a disregard for self-correction.' },
+                { id: 'F0600', title: 'Freedom from Abuse', desc: 'An "Implicit Indicator" tag. Requires facilities to protect each resident from all types of abuse, neglect, and exploitation. Repeated citations suggest training and competency systems have failed.' },
+                { id: 'F0689', title: 'Accident Prevention', desc: 'An "Implicit Indicator" tag. Requires facilities to ensure the resident environment remains as free of accident hazards as is possible. Frequent falls or accidents signal potential failures in staff supervision and training.' }
+            ],
+            advocacyQuestions: [
+                 {
+                    title: 'Regarding Training (F0730, F0943)',
+                    content: 'Can you describe your initial onboarding and annual in-service training program for nurse aides? How do you specifically train staff on abuse prevention and dementia care, and can you provide documentation of this training?'
+                },
+                {
+                    title: 'Regarding Competency (F0726)',
+                    content: 'How do you verify and document the specific competencies of your nursing staff, especially for complex care needs like dialysis or respiratory support? How often are direct performance reviews conducted for frontline caregivers?'
+                },
+                {
+                    title: 'Regarding Staffing & Turnover (F0725)',
+                    content: 'What is your current nurse and aide turnover rate over the last 12 months? What is your strategy for ensuring new staff are fully trained and competent before they are assigned a full resident load?'
+                },
+                {
+                    title: 'Regarding Past Deficiencies',
+                    content: 'I see from your public inspection report that you were cited for [e.g., \'failure to prevent accidents\' on a specific date]. Can you walk me through the specific steps you took to correct this deficiency, including what new staff training was implemented as part of your plan of correction?'
+                }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let activeState = appData.states[0].id;
+
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
+
+            function showModal(title, body) {
+                modalTitle.textContent = title;
+                modalBody.textContent = body;
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.querySelector('.modal-content').classList.remove('scale-95');
+            }
+
+            function hideModal() {
+                modal.classList.add('opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none'), 300);
+            }
+
+            modalClose.addEventListener('click', hideModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    hideModal();
+                }
+            });
+
+            function renderFindingsChart() {
+                const ctx = document.getElementById('findingsChart').getContext('2d');
+                const explicitCount = appData.states.flatMap(s => s.facilities).filter(f => f.type === 'Explicit').length;
+                const implicitCount = appData.states.flatMap(s => s.facilities).filter(f => f.type === 'Implicit').length;
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Explicit Training/Competency Failure', 'Implicit Competency Failure'],
+                        datasets: [{
+                            data: [explicitCount, implicitCount],
+                            backgroundColor: ['#ef4444', '#f97316'],
+                            borderColor: '#fdfdfd',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 20,
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + ' facilities';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            }
+            
+            function renderStateTabs() {
+                const container = document.getElementById('state-tabs');
+                container.innerHTML = appData.states.map(state => `
+                    <button class="state-tab px-4 py-2 rounded-md text-sm font-medium transition-colors ${state.id === activeState ? 'tab-active' : 'tab-inactive'}" data-state="${state.id}">
+                        ${state.name}
+                    </button>
+                `).join('');
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('state-tab')) {
+                        activeState = e.target.dataset.state;
+                        renderStateTabs();
+                        renderStateContent();
+                    }
+                });
+            }
+
+            function renderStateContent() {
+                const container = document.getElementById('state-content-container');
+                const stateData = appData.states.find(s => s.id === activeState);
+                let statsHtml = '';
+                if (stateData.stats) {
+                    statsHtml = `
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-center">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200"><p class="text-2xl font-bold text-blue-600">${stateData.stats.homes}</p><p class="text-sm text-gray-500">Total Homes</p></div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200"><p class="text-2xl font-bold text-red-500">${stateData.stats.seriousDeficiencies}</p><p class="text-sm text-gray-500">Homes with Serious Deficiencies</p></div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200"><p class="text-2xl font-bold text-yellow-500">${stateData.stats.infectionDeficiencies}</p><p class="text-sm text-gray-500">Homes with Infection Deficiencies</p></div>
+                    </div>`;
+                }
+                
+                const facilitiesHtml = stateData.facilities.map((facility, index) => `
+                    <div class="bg-white border border-gray-200 rounded-lg mb-2">
+                        <div class="facility-accordion-header p-4 flex justify-between items-center" data-target="facility-${stateData.id}-${index}">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${facility.name}</h4>
+                                <p class="text-sm text-gray-500">${facility.city}, ${stateData.id}</p>
+                            </div>
+                            <span class="text-sm font-medium px-3 py-1 rounded-full ${facility.type === 'Explicit' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}">${facility.type} Failure</span>
+                        </div>
+                        <div id="facility-${stateData.id}-${index}" class="facility-accordion-content px-4 pb-4 border-t border-gray-200">
+                           <p class="text-gray-600 mt-4 text-sm">${facility.analysis}</p>
+                           <p class="text-xs text-gray-500 mt-2">Most Recent Serious Deficiency: ${facility.date}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = statsHtml + facilitiesHtml;
+            }
+
+            function renderFTags() {
+                const container = document.getElementById('ftag-container');
+                container.innerHTML = appData.fTags.map(tag => `
+                    <button class="ftag-button px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm font-mono hover:bg-gray-200 transition" data-id="${tag.id}">${tag.id}</button>
+                `).join('');
+                container.addEventListener('click', e => {
+                    if (e.target.classList.contains('ftag-button')) {
+                        const tagData = appData.fTags.find(t => t.id === e.target.dataset.id);
+                        if (tagData) {
+                            showModal(tagData.title + ' ('+ tagData.id +')', tagData.desc);
+                        }
+                    }
+                });
+            }
+            
+            function renderAdvocacyQuestions() {
+                const container = document.getElementById('advocacy-questions');
+                container.innerHTML = appData.advocacyQuestions.map((q, index) => `
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <div class="facility-accordion-header p-4" data-target="question-${index}">
+                           <h4 class="font-semibold text-blue-700">${q.title}</h4>
+                        </div>
+                        <div id="question-${index}" class="facility-accordion-content px-4 pb-4 border-t border-gray-200">
+                           <p class="text-gray-600 mt-4">${q.content}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const themeId = e.currentTarget.dataset.theme;
+                    const themeData = appData.themes[themeId];
+                    if (themeData) {
+                        showModal(themeData.title, themeData.body);
+                    }
+                });
+            });
+            
+            document.querySelector('body').addEventListener('click', (e) => {
+                const header = e.target.closest('.facility-accordion-header');
+                if (header) {
+                    const contentId = header.dataset.target;
+                    const content = document.getElementById(contentId);
+                    content.classList.toggle('open');
+                }
+            });
+
+            renderFindingsChart();
+            renderStateTabs();
+            renderStateContent();
+            renderFTags();
+            renderAdvocacyQuestions();
+        });
+    </script>
+
+</body>
+</html>
