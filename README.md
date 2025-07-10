@@ -26,6 +26,12 @@ Click the links below to navigate directly to our interactive reports and bluepr
 * **AI-Powered, Compliant Healthcare Training Blueprint:** Discover our blueprint for leveraging Generative AI, Multi-Agent Collaboration Platforms, and intelligent Agent systems in healthcare training. [Live Page Link](https://showdme-kbase.github.io/AI-Powered,%20Compliant%20Healthcare%20Training%20Blueprint.html)
 * **SNF Platform Integration Research:** Explore in-depth research on seamless integration strategies for Skilled Nursing Facility platforms, optimizing data flow and operational efficiency. [Live Page Link](https://showdme-kbase.github.io/SNF%20Platform%20Integration%20Research.html)
 
+### F Tag Research
+
+* **Nursing Home Staffing Deficiencies:** An interactive report detailing common staffing deficiencies in nursing homes and their impact on care quality. [Live Page Link](https://showdme-kbase.github.io/Nursing%20Home%20Staffing%20Deficiencies.html)
+* **Interactive Analysis:** An interactive analysis of nursing home deficiency reports, exploring the critical link between staff competency, training failures, and resident safety. [Live Page Link](https://showdme-kbase.github.io/Interactive%20Analysis%20of%20Nursing%20Home%20deficiency%20Reports.html)
+* **F-Tag Explorer:** Understand the building blocks of long-term care compliance with this interactive F-Tag explorer. [Live Page Link](https://showdme-kbase.github.io/F-Tag%20Fundamentals.html)
+
 ---
 
 ## Site Information
